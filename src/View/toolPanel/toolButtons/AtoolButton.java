@@ -14,13 +14,13 @@ public abstract class AtoolButton extends JButton {
     AtoolButton(String imageIcon, String messageInfo) {
         super("", new ImageIcon(IMG_DIR + imageIcon));
         setToolTipText(messageInfo);
-        this.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
-        this.messageInfo = messageInfo;
-        this.setOpaque(true);
-        this.setFocusPainted(false);
-        this.setBorderPainted(false);
-        this.setContentAreaFilled(false);
-        this.setBackground(BUTTON_COLOR);
+        setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
+        messageInfo = messageInfo;
+        setOpaque(true);
+        setFocusPainted(false);
+        setBorderPainted(false);
+        setContentAreaFilled(false);
+        setBackground(BUTTON_COLOR);
     }
 
     public String getMessageInfo() {

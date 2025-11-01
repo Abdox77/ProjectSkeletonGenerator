@@ -22,17 +22,17 @@ public class toolPanel extends JPanel {
 
     public toolPanel(toolPanelObserver observer) {
         Dimension dimension = new Dimension(appFrame.WIDTH / 5, appFrame.HEIGHT);
-        this.setPreferredSize(dimension);
-        this.setLayout(new FlowLayout());
-        this.setBackground(this.TOOLPANEL_BACKGROUND);
-        this.observer = observer;
-        this.toolButtons.add(new classBoxButton(this.observer));
+        setPreferredSize(dimension);
+        setLayout(new FlowLayout());
+        setBackground(TOOLPANEL_BACKGROUND);
+        observer = observer;
+        toolButtons.add(new classBoxButton(observer));
         for(AtoolButton button : toolButtons){
-            this.add(button);
+            add(button);
         }
     }
 
     public void setToolPanelObserver(toolPanelObserver toolPanelObserver) {
-        this.observer = toolPanelObserver;
+        observer = toolPanelObserver;
     }
 }
