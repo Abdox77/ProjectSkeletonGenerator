@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class tinkerPanel extends JPanel implements toolPanelObserver {
+    private static final int CLASS_WIDTH = 200;
+    private static final int CLASS_HEIGHT = 200;
     private final Color TINKERPANEL_BACKGROUND = Color.WHITE;
     private final List<classBox> classBoxList;
 
@@ -20,13 +22,12 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
     }
 
     public void addClassBox(classBox classBox) {
-        classBoxList.add(classBox);
-
         // here i should perform checks Naming and the existing of a similar class ....
-
-        this.classBoxList.add(classBox);
-        this.add(classBox);
-        this.repaint();
+        classBoxList.add(classBox);
+        add(classBox);
+        revalidate();
+        repaint();
+        classBox.dragHandler = new DragHandler(classBox).snapToGrid(1).clampedToParent(true);
     }
 
     private classBox createClassBox(String name) {
