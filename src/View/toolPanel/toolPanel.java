@@ -4,6 +4,7 @@ import View.appFrame;
 import View.toolPanel.toolButtons.AtoolButton;
 import View.toolPanel.toolButtons.classBoxButton;
 import Controllers.toolPanelObserver;
+import View.toolPanel.toolButtons.inheritanceButton;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class toolPanel extends JPanel {
         setBackground(TOOLPANEL_BACKGROUND);
         observer = observer;
         toolButtons.add(new classBoxButton(observer));
+        toolButtons.add(new inheritanceButton());
         for(AtoolButton button : toolButtons){
             add(button);
         }

@@ -7,17 +7,9 @@ import java.awt.event.MouseEvent;
 
 public class DragHandler extends MouseAdapter {
     private Point last;
-    private boolean snapToGrid;
-    private boolean clampedToParent;
-    private int grid = 20;
+    private boolean clampedToParent = true;
     private JComponent dragTarget;
     private JComponent dragTargetParent;
-
-    public DragHandler snapToGrid(int grid) {
-        this.snapToGrid = true;
-        this.grid = grid;
-        return this;
-    }
 
     public DragHandler clampedToParent(boolean isClamped) {
         this.clampedToParent = isClamped;
@@ -33,7 +25,7 @@ public class DragHandler extends MouseAdapter {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        dragTarget.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        dragTarget.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         last = e.getPoint();
         dragTargetParent.setComponentZOrder(dragTarget, 0);
         dragTargetParent.revalidate();
@@ -49,11 +41,6 @@ public class DragHandler extends MouseAdapter {
 
         int newX = mouseInParent.x - last.x;
         int newY = mouseInParent.y - last.y;
-
-        if (snapToGrid) {
-            newX = Math.round(newX / (float)grid) * grid;
-            newY = Math.round(newY / (float)grid) * grid;
-        }
 
         if (clampedToParent) {
             int maxX = dragTargetParent.getWidth() - dragTarget.getWidth();

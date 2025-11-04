@@ -4,16 +4,31 @@ import View.tinkerPanel.DragHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.lang.classfile.Signature;
 import java.util.ArrayList;
+import java.util.List;
 
 public class classBox extends JPanel {
-    public DragHandler dragHandler;
+    private JPopupMenu contextMenu;
     private JLabel nameLabel;
     private JPanel groupPanel;
     private JPanel attributePanel;
     private JPanel methodsPanel;
-//    private ArrayList<JLabel> attributes = new ArrayList<JPanel>();
+    private ArrayList<JLabel> attributes;
     private final Color CLASSBOX_COLOR = Color.LIGHT_GRAY;
+    public DragHandler dragHandler;
+
+
+    public classBox(String title) {
+        setLayout();
+        addClassName(title);
+        attributePanel = defaultClassBoxPanel(1);
+        methodsPanel = defaultClassBoxPanel(0);
+        addGroupPanel();
+        initContextMenu();
+    }
 
     private void setLayout() {
         setLayout(new BorderLayout());
@@ -39,48 +54,167 @@ public class classBox extends JPanel {
         groupPanel.setOpaque(true);
         groupPanel.setBackground(CLASSBOX_COLOR);
         groupPanel.add(attributePanel);
-//        groupPanel.add(methodsPanel);
+        groupPanel.add(methodsPanel);
         add(groupPanel, BorderLayout.CENTER);
     }
 
-    private void addAttributePanel() {
-        attributePanel = new JPanel();
-        attributePanel.setLayout(new BoxLayout(attributePanel, BoxLayout.Y_AXIS));
-        attributePanel.setBackground(CLASSBOX_COLOR);
-        attributePanel.setOpaque(true);
-        attributePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
-        attributePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    private JPanel defaultClassBoxPanel(int hasBottom) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(CLASSBOX_COLOR);
+        panel.setOpaque(true);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.setBorder(BorderFactory.createMatteBorder(0, 0, hasBottom, 0, Color.BLACK));
+        return panel;
     }
 
-    private void addMethodsPanel() {
+    private void initContextMenu() {
+        contextMenu = new JPopupMenu();
 
+        JMenuItem addAttr = getAttrJMenuItem();
+        JMenuItem addMethod = getMethodJMenuItem();
+
+        contextMenu.add(addAttr);
+        contextMenu.add(addMethod);
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+            private void displayPopUp(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    requestFocusInWindow();
+                    contextMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+            @Override public void mousePressed(MouseEvent e) { displayPopUp(e); }
+            @Override public void mouseReleased(MouseEvent e) { displayPopUp(e); }
+        };
+        addMouseListener(mouseAdapter);
     }
+
+    private JMenuItem getAttrJMenuItem() {
+        JMenuItem addAttr = new JMenuItem("Add Attribute");
+        addAttr.addActionListener(e -> {
+            String input =  JOptionPane.showInputDialog(this, "Attribute (name:type)", "Add Attribute");
+            if (input == null || input.isBlank()) {
+                return;
+            }
+            String[] attr = input.split(":");
+            if (attr.length != 2) {
+                return;
+            }
+            String name = attr[0].trim();
+            String type = attr[1].trim();
+            if (checkInputType(type) && !name.isBlank()) {
+                createNewAttr(type, name);
+            }
+        });
+        return addAttr;
+    }
+
+    private JMenuItem getMethodJMenuItem() {
+        JMenuItem addMethod = new JMenuItem("Add Method");
+        addMethod.addActionListener(e -> {
+            String input =  JOptionPane.showInputDialog(this, "returnType methodName (arg1:type, ...)", "Add Method");
+            if (input == null || input.isBlank()) {
+                return;
+            }
+            String[] inputs = input.split("\\(");
+            if (inputs.length != 2) {
+                return;
+            }
+            String[] signature = inputs[0].split(" ");
+            if (signature.length != 2) {
+                System.out.println(signature.length);
+                System.out.println("invalid signature");
+                System.out.print(inputs[0]);
+                return;
+            }
+            String returnType = signature[0].trim();
+            String methodName = signature[1].trim();
+            if (signature.length != 2) {
+                return;
+            }
+
+            inputs[1] = inputs[1].trim();
+            if (inputs[1].charAt(inputs[1].length() - 1) != ')') {
+                System.out.println("the input doesn't end with a (");
+                return;
+            }
+            inputs[1] = inputs[1].substring(0, inputs[1].length() - 1);
+            String[] args = inputs[1].split(",");
+            List<String []> methodArgs = new ArrayList<>();
+            for(String arg : args) {
+                String []tmp = arg.split(":");
+                if (!isValidArg(tmp)) {
+                    System.out.println("the argument is invalid " + arg);
+                    return;
+                }
+                methodArgs.add(tmp);
+            }
+            createNewMethod(returnType, methodName, methodArgs);
+        });
+        return addMethod;
+    }
+
 
     private void createNewAttr(String type, String name) {
         JLabel attr = new JLabel(name + ": " + type.toUpperCase());
-        attr.setPreferredSize(new Dimension(200, 20));
-        attr.setBackground(CLASSBOX_COLOR);
         attr.setOpaque(true);
+        attr.setBackground(CLASSBOX_COLOR);
+        attr.setPreferredSize(new Dimension(200, 20));
         attr.setMaximumSize(attr.getPreferredSize());
         attributePanel.add(attr);
+        attributePanel.revalidate();
+        attributePanel.repaint();
     }
 
-    private void addDragHandler() {
-//        dragHandler = new DragHandler(this);
+    private void createNewMethod(String returnType, String methodName, List<String[]> methodArgs) {
+        if (returnType  == null || methodName == null || methodName.isBlank()) {
+            System.out.println("the return type is invalid");
+            return;
+        }
+        JLabel attr = new JLabel();
+        attr.setText(buildMethodString(returnType, methodName, methodArgs));
+        attr.setOpaque(true);
+        attr.setBackground(CLASSBOX_COLOR);
+        attr.setPreferredSize(new Dimension(200, 20));
+        attr.setMaximumSize(attr.getPreferredSize());
+        methodsPanel.add(attr);
+        methodsPanel.revalidate();
+        methodsPanel.repaint();
     }
 
-    public classBox(String title) {
-        setLayout();
-        addClassName(title);
-        addAttributePanel();
-        addGroupPanel();
-        createNewAttr("int", "a");
-        createNewAttr("char", "a");
-        addDragHandler();
+    private String buildMethodString(String returnType, String methodName, List<String[]> methodArgs) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(returnType.toUpperCase());
+        sb.append(" ");
+        sb.append(methodName);
+        sb.append(" (");
+        int i = 0;
+        for(String[] tmp : methodArgs) {
+            ++i;
+            sb.append(tmp[0]);
+            sb.append(": ");
+            sb.append(tmp[1].toUpperCase());
+            if (i + 1 < methodArgs.size()) {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
 
-    public void addAttribute(String attrName, String attrType) {
+    private boolean isValidArg(String[] args) {
+        if (args.length != 2) {
+            return false;
+        }
+        String name = args[0].trim();
+        String type = args[1].trim();
+        return (checkInputType(type) && !name.isBlank());
+    }
 
+    private boolean checkInputType(String type) {
+        type = type.toLowerCase();
+        return (type.equals("int") || type.equals("char") || type.equals("string") || type.equals("boolean"));
     }
 }
