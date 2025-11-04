@@ -11,12 +11,10 @@ public class classBoxButton extends AtoolButton {
     public classBoxButton(toolPanelObserver observer) {
         super(ICON_NAME, MESSAGE_INFO);
         this.observer = observer;
-
         addActionListener(e -> {
             String name = JOptionPane.showInputDialog("Enter Class Name:");
-            if (name != null && !name.isBlank()) {
+            if (name != null && !name.isBlank() && observer != null) {
                 observer.onClassCreate(name.trim());
-                System.out.println("Class Name: " + name);
             }
         });
     }

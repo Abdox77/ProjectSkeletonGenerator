@@ -27,7 +27,7 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
         add(classBox);
         revalidate();
         repaint();
-        classBox.dragHandler = new DragHandler(classBox).snapToGrid(1).clampedToParent(true);
+        classBox.dragHandler = new DragHandler(classBox);
     }
 
     private classBox createClassBox(String name) {

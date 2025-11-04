@@ -12,10 +12,14 @@ public abstract class AtoolButton extends JButton {
 
 
     AtoolButton(String imageIcon, String messageInfo) {
-        super("", new ImageIcon(IMG_DIR + imageIcon));
+        ImageIcon tmp = new ImageIcon(IMG_DIR + imageIcon);
+        Image image = tmp.getImage();
+        ImageIcon icon = new ImageIcon(image.getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+        super.setText("");
+        super.setIcon(icon);
         setToolTipText(messageInfo);
         setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
-        messageInfo = messageInfo;
+        this.messageInfo = messageInfo;
         setOpaque(true);
         setFocusPainted(false);
         setBorderPainted(false);
