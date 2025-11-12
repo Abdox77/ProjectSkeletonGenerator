@@ -7,22 +7,22 @@ import java.awt.*;
 
 
 public class appFrame extends JFrame {
-    private toolPanel toolPanel;
-    private tinkerPanel tinkerPanel;
-
+    private final toolPanel toolPanel;
+    private final tinkerPanel tinkerPanel;
     public static final int HEIGHT = 1080;
     public static final int WIDTH = 1080;
     public static final String title = "Project Skeleton Generator";
 
 
     public appFrame() {
-        this.setTitle(title);
-        this.setSize(WIDTH, HEIGHT);
-        this.tinkerPanel = new tinkerPanel();
-        this.toolPanel = new toolPanel(this.tinkerPanel);
-        this.setLayout(new BorderLayout(10, 5));
-        this.add(this.tinkerPanel, BorderLayout.CENTER);
-        this.add(this.toolPanel, BorderLayout.LINE_START);
+        setTitle(title);
+        setSize(WIDTH, HEIGHT);
+        tinkerPanel = new tinkerPanel();
+        toolPanel = new toolPanel(tinkerPanel);
+        setLayout(new BorderLayout(10, 5));
+        add(tinkerPanel, BorderLayout.CENTER);
+        add(toolPanel, BorderLayout.LINE_START);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
 //    public void appListeners() {

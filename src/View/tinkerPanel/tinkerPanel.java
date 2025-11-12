@@ -1,6 +1,7 @@
 package View.tinkerPanel;
 
 import View.tinkerPanel.elements.classBox;
+import View.tinkerPanel.elements.inheritance;
 import Controllers.toolPanelObserver;
 
 import javax.swing.*;
@@ -13,16 +14,22 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
     private static final int CLASS_HEIGHT = 200;
     private final Color TINKERPANEL_BACKGROUND = Color.WHITE;
     private final List<classBox> classBoxList;
+    private final List<inheritance>  inheritanceList;
 
 
     public tinkerPanel() {
         classBoxList = new ArrayList<classBox>();
+        inheritanceList = new ArrayList<inheritance>();
         this.setLayout(null);
         this.setBackground(TINKERPANEL_BACKGROUND);
     }
 
     public void addClassBox(classBox classBox) {
-        // here i should perform checks Naming and the existing of a similar class ....
+        for (classBox box : classBoxList) {
+            if (box.getName().equals(classBox.getName())) {
+                return;
+            }
+        }
         classBoxList.add(classBox);
         add(classBox);
         revalidate();
@@ -38,5 +45,34 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
     public void onClassCreate(String event) {
         System.out.println("i got notified class");
         this.addClassBox(this.createClassBox(event));
+    }
+
+    @Override
+    public void onInheritanceCreate(String parent, String child) {
+        System.out.println("i got notified inheritance class");
+
+        classBox _parent = getClassBox(parent);
+        classBox _child = getClassBox(child);
+        if(parent == null || child == null) return;
+        addInheritance(createInheritance(_parent, _child));
+    }
+
+    private void addInheritance(inheritance inheritance) {
+        inheritance.setBounds(this.getBounds());
+        inheritanceList.add(inheritance);
+        add(inheritance);
+        revalidate();
+        repaint();
+    }
+
+    private inheritance createInheritance(classBox _parent, classBox _child) {
+        return new inheritance(_parent, _child);
+    }
+
+    private classBox getClassBox(String className) {
+        for (classBox classBox : classBoxList) {
+            if (classBox.getName().equals(className)) return classBox;
+        }
+        return null;
     }
 }

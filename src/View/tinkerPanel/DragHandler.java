@@ -8,8 +8,8 @@ import java.awt.event.MouseEvent;
 public class DragHandler extends MouseAdapter {
     private Point last;
     private boolean clampedToParent = true;
-    private JComponent dragTarget;
-    private JComponent dragTargetParent;
+    private final JComponent dragTarget;
+    private final JComponent dragTargetParent;
 
     public DragHandler clampedToParent(boolean isClamped) {
         this.clampedToParent = isClamped;
@@ -36,12 +36,9 @@ public class DragHandler extends MouseAdapter {
     public void mouseDragged(MouseEvent e) {
         if (dragTargetParent == null)
             return;
-
         Point mouseInParent = SwingUtilities.convertPoint(dragTarget, e.getPoint(), dragTargetParent);
-
         int newX = mouseInParent.x - last.x;
         int newY = mouseInParent.y - last.y;
-
         if (clampedToParent) {
             int maxX = dragTargetParent.getWidth() - dragTarget.getWidth();
             int maxY = dragTargetParent.getHeight() - dragTarget.getHeight();

@@ -22,6 +22,7 @@ public class classBox extends JPanel {
 
 
     public classBox(String title) {
+        setName(title);
         setLayout();
         addClassName(title);
         attributePanel = defaultClassBoxPanel(1);
@@ -157,7 +158,7 @@ public class classBox extends JPanel {
 
 
     private void createNewAttr(String type, String name) {
-        JLabel attr = new JLabel(name + ": " + type.toUpperCase());
+        JLabel attr = new JLabel("- " + name + ": " + type.toUpperCase());
         attr.setOpaque(true);
         attr.setBackground(CLASSBOX_COLOR);
         attr.setPreferredSize(new Dimension(200, 20));
@@ -184,9 +185,13 @@ public class classBox extends JPanel {
     }
 
     private String buildMethodString(String returnType, String methodName, List<String[]> methodArgs) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(returnType.toUpperCase());
-        sb.append(" ");
+        StringBuilder sb = new StringBuilder();
+        sb.append("+ ");
+        returnType = returnType.toUpperCase();
+        if (!returnType.equals("VOID")) {
+            sb.append(returnType.toUpperCase());
+            sb.append(" ");
+        }
         sb.append(methodName);
         sb.append(" (");
         int i = 0;
