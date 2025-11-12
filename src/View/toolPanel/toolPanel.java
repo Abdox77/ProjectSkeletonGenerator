@@ -28,7 +28,7 @@ public class toolPanel extends JPanel {
         setBackground(TOOLPANEL_BACKGROUND);
         observer = observer;
         toolButtons.add(new classBoxButton(observer));
-        toolButtons.add(new inheritanceButton());
+        toolButtons.add(new inheritanceButton(observer));
         for(AtoolButton button : toolButtons){
             add(button);
         }
