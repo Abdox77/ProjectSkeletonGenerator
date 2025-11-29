@@ -1,6 +1,7 @@
 package View.toolPanel.toolButtons;
 
 import Controllers.toolPanelObserver;
+import View.tinkerPanel.tools.cardinality;
 
 import javax.swing.*;
 
@@ -14,6 +15,14 @@ public class inheritanceButton extends AtoolButton {
             if (parent == null || parent.isBlank()) return;
             String child = JOptionPane.showInputDialog("Please enter the child class");
             if (child == null || child.isBlank()) return;
+
+//            String childCard = JOptionPane.showInputDialog("Please enter the child side cardinality : {0..n, 1..1, ...}");
+//            if (childCard == null || childCard.isBlank()) return;
+//
+//            String parentCard = JOptionPane.showInputDialog("Please enter the parent side cardinality : {0..n, 1..1, ...}");
+//            if (parentCard == null || parentCard.isBlank()) return;
+
+//            cardinality cardinality = new cardinality(parent, child);
             observer.onInheritanceCreate(parent, child);
         });
     }

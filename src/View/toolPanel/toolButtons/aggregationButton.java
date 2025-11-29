@@ -1,0 +1,32 @@
+package View.toolPanel.toolButtons;
+
+import Controllers.toolPanelObserver;
+
+import javax.swing.*;
+
+public class aggregationButton extends AtoolButton {
+    private toolPanelObserver observer;
+    static final String MESSAGE_INFO = "Create a aggregation";
+    private static final String  ICON_NAME = "aggregation.png";
+
+    public aggregationButton(toolPanelObserver _observer) {
+        super(ICON_NAME, MESSAGE_INFO);
+        observer = _observer;
+        addActionListener(e-> {
+            String firstClass = JOptionPane.showInputDialog("first <>--> second; Please first class name : ");
+            if (firstClass == null || firstClass.isBlank())
+                return;
+            String secondClass = JOptionPane.showInputDialog("fist <>--> second; Please second class name : ");
+            if (secondClass == null || secondClass.isBlank())
+                return;
+            String cardFirstClass = JOptionPane.showInputDialog("first <>--> second; Please enter first class cardinality");
+            if (cardFirstClass == null || cardFirstClass.isBlank())
+                return;
+            String cardSecondClass = JOptionPane.showInputDialog("first <>--> second; Please enter second class cardinality");
+            if  (cardSecondClass == null || cardSecondClass.isBlank())
+                return;
+            System.out.println(firstClass + " " + secondClass + " " + cardFirstClass + " " + cardSecondClass);
+            observer.onAggregationCreate(firstClass, secondClass, cardFirstClass, cardSecondClass);
+        });
+    }
+}
