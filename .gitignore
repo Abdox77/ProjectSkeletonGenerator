@@ -31,4 +31,4 @@ bin/
 
 
 ignorables/*
-Thoughts.md
+./src/Thoughts.md

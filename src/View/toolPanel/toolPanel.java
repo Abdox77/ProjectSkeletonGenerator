@@ -1,10 +1,8 @@
 package View.toolPanel;
 
 import View.appFrame;
-import View.toolPanel.toolButtons.AtoolButton;
-import View.toolPanel.toolButtons.classBoxButton;
+import View.toolPanel.toolButtons.*;
 import Controllers.toolPanelObserver;
-import View.toolPanel.toolButtons.inheritanceButton;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -29,6 +27,9 @@ public class toolPanel extends JPanel {
         observer = observer;
         toolButtons.add(new classBoxButton(observer));
         toolButtons.add(new inheritanceButton(observer));
+        toolButtons.add(new aggregationButton(observer));
+        toolButtons.add(new compostionButton(observer));
+
         for(AtoolButton button : toolButtons){
             add(button);
         }

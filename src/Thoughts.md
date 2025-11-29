@@ -1,4 +1,13 @@
 
+
+<!-- Thoughts on what i should next -->
+0000- check for the validity of the cardinality
+1- change the input form specially types should be a list instead
+2- add a generate code button in the right bottom i guess
+3- add the possibility to edit a specific class
+
+
+
 <!-- File Structure --> 
 How i will be arranging my files:
 

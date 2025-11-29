@@ -1,15 +1,18 @@
 package View.tinkerPanel;
 
+import View.tinkerPanel.elements.aggregation;
 import View.tinkerPanel.elements.classBox;
 import View.tinkerPanel.elements.inheritance;
 import Controllers.toolPanelObserver;
+import View.tinkerPanel.tools.cardinality;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class tinkerPanel extends JPanel implements toolPanelObserver {
+public class tinkerPanel extends JPanel implements toolPanelObserver
+{
     private static final int CLASS_WIDTH = 200;
     private static final int CLASS_HEIGHT = 200;
     private final Color TINKERPANEL_BACKGROUND = Color.WHITE;
@@ -22,13 +25,17 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
         inheritanceList = new ArrayList<inheritance>();
         this.setLayout(null);
         this.setBackground(TINKERPANEL_BACKGROUND);
+        classBox child = createClassBox("h");
+        classBox parent = createClassBox("w");
+        addClassBox(child);
+        addClassBox(parent);
     }
 
-    public void addClassBox(classBox classBox) {
-        for (classBox box : classBoxList) {
-            if (box.getName().equals(classBox.getName())) {
-                return;
-            }
+    public void addClassBox(classBox classBox)
+    {
+        for (classBox box : classBoxList)
+        {
+            if (box.getName().equals(classBox.getName())) return;
         }
         classBoxList.add(classBox);
         add(classBox);
@@ -37,14 +44,47 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
         classBox.dragHandler = new DragHandler(classBox);
     }
 
-    private classBox createClassBox(String name) {
+    private classBox createClassBox(String name)
+    {
         return new classBox(name);
     }
 
     @Override
-    public void onClassCreate(String event) {
+    public void onClassCreate(String event)
+    {
         System.out.println("i got notified class");
         this.addClassBox(this.createClassBox(event));
+    }
+
+    @Override
+    public void onAggregationCreate(String firstClass, String secondClass, String cardFirst, String cardSecond)
+    {
+        classBox _first = getClassBox(firstClass);
+        classBox _second = getClassBox(secondClass);
+
+        // i should also check here the cardinalities
+
+        if(_second == null || _first == null) return;
+        addAggregation(createNewAggregation(_first, _second, cardFirst, cardSecond));
+    }
+
+    private void addAggregation(aggregation a)
+    {
+        a.setBounds(this.getBounds());
+        add(a);
+        revalidate();
+        repaint();
+    }
+
+    private aggregation createNewAggregation(classBox _first, classBox _second, String cardFirst, String cardSecond)
+    {
+        return new aggregation(_first, _second, cardFirst, cardSecond);
+    }
+
+    @Override
+    public void onCompositionCreate(String firstClass, String secondClass, String cardFirst, String cardSecond)
+    {
+
     }
 
     @Override
@@ -53,6 +93,7 @@ public class tinkerPanel extends JPanel implements toolPanelObserver {
 
         classBox _parent = getClassBox(parent);
         classBox _child = getClassBox(child);
+
         if(parent == null || child == null) return;
         addInheritance(createInheritance(_parent, _child));
     }

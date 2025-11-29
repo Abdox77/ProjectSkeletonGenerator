@@ -1,6 +1,9 @@
 package View.tinkerPanel.elements;
 
+import View.tinkerPanel.tools.cardinality;
+
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -44,16 +47,18 @@ public class inheritance extends JComponent {
        Point2D p1 = SwingUtilities.convertPoint(child, child.getWidth() + 20, child.getHeight() / 2, this);
        Point2D p2 = SwingUtilities.convertPoint(parent, 0, parent.getHeight() / 2, this);
        g2.draw(new Line2D.Double(p1, p2));
+
        drawInheritanceHead(g2, (int)p1.getX(), (int)p1.getY());
        g2.dispose();
     }
 
     private void drawInheritanceHead(Graphics2D g, int a, int b) {
-        int x = a - 20;
-        int y = b;
         int alpha = 20;
-        int xPoly[] = {x , x + alpha, x + alpha};
-        int yPoly[] = {y, y + alpha, y - alpha};
+        int x = a - alpha;
+        int y = b;
+
+        int[] xPoly = {x , x + alpha, x + alpha};
+        int[] yPoly = {y, y + alpha, y - alpha};
         Polygon poly = new Polygon(xPoly, yPoly, xPoly.length);
         g.drawPolygon(poly);
     }
