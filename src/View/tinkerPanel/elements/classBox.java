@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -13,11 +14,13 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import View.tinkerPanel.DragHandler;
+import View.tinkerPanel.tools.AttributeDialog;
+import View.tinkerPanel.tools.MethodDialog;
 
 public class classBox extends JPanel {
     private JPopupMenu contextMenu;
@@ -102,19 +105,19 @@ public class classBox extends JPanel {
 
     private JMenuItem getAttrJMenuItem() {
         JMenuItem addAttr = new JMenuItem("Add Attribute");
+
         addAttr.addActionListener(e -> {
-            String input =  JOptionPane.showInputDialog(this, "Attribute (name:type)", "Add Attribute");
-            if (input == null || input.isBlank()) {
-                return;
-            }
-            String[] attr = input.split(":");
-            if (attr.length != 2) {
-                return;
-            }
-            String name = attr[0].trim();
-            String type = attr[1].trim();
-            if (checkInputType(type) && !name.isBlank()) {
-                createNewAttr(type, name);
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            AttributeDialog dialog = new AttributeDialog(parentFrame);
+            dialog.setVisible(true);
+
+            if (dialog.isConfirmed()) {
+                String attr = dialog.getAttributeName();
+                String type = dialog.getAttributeType();
+                attr = attr.trim();
+                if (attr.isBlank())
+                    return;
+                createNewAttr(type, attr);
             }
         });
         return addAttr;
@@ -123,48 +126,19 @@ public class classBox extends JPanel {
     private JMenuItem getMethodJMenuItem() {
         JMenuItem addMethod = new JMenuItem("Add Method");
         addMethod.addActionListener(e -> {
-            String input =  JOptionPane.showInputDialog(this, "returnType methodName (arg1:type, ...)", "Add Method");
-            if (input == null || input.isBlank()) {
-                return;
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            MethodDialog dialog = new MethodDialog(parentFrame);
+            dialog.setVisible(true);
+            
+            if (dialog.isConfirmed()) {
+                String returnType = dialog.getReturnType();
+                String methodName = dialog.getMethodName();
+                List<String[]> methodArgs = dialog.getMethodArgs();
+                createNewMethod(returnType, methodName, methodArgs);
             }
-            String[] inputs = input.split("\\(");
-            if (inputs.length != 2) {
-                return;
-            }
-            String[] signature = inputs[0].split(" ");
-            if (signature.length != 2) {
-                System.out.println(signature.length);
-                System.out.println("invalid signature");
-                System.out.print(inputs[0]);
-                return;
-            }
-            String returnType = signature[0].trim();
-            String methodName = signature[1].trim();
-            if (signature.length != 2) {
-                return;
-            }
-
-            inputs[1] = inputs[1].trim();
-            if (inputs[1].charAt(inputs[1].length() - 1) != ')') {
-                System.out.println("the input doesn't end with a (");
-                return;
-            }
-            inputs[1] = inputs[1].substring(0, inputs[1].length() - 1);
-            String[] args = inputs[1].split(",");
-            List<String []> methodArgs = new ArrayList<>();
-            for(String arg : args) {
-                String []tmp = arg.split(":");
-                if (!isValidArg(tmp)) {
-                    System.out.println("the argument is invalid " + arg);
-                    return;
-                }
-                methodArgs.add(tmp);
-            }
-            createNewMethod(returnType, methodName, methodArgs);
         });
         return addMethod;
     }
-
 
     private void createNewAttr(String type, String name) {
         JLabel attr = new JLabel("- " + name + ": " + type.toUpperCase());
@@ -215,20 +189,5 @@ public class classBox extends JPanel {
         }
         sb.append(")");
         return sb.toString();
-    }
-
-
-    private boolean isValidArg(String[] args) {
-        if (args.length != 2) {
-            return false;
-        }
-        String name = args[0].trim();
-        String type = args[1].trim();
-        return (checkInputType(type) && !name.isBlank());
-    }
-
-    private boolean checkInputType(String type) {
-        type = type.toLowerCase();
-        return (type.equals("int") || type.equals("char") || type.equals("string") || type.equals("boolean"));
     }
 }
