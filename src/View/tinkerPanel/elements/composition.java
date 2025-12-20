@@ -12,14 +12,14 @@ import java.awt.geom.Point2D;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-public class aggregation extends JComponent
+public class composition extends JComponent
 {
     private final classBox from;
     private final classBox to;
     private final String cardFrom;
     private final String cardTo;
 
-    public aggregation(classBox _from, classBox _to, String _cardFrom, String _cardTo)
+    public composition(classBox _from, classBox _to, String _cardFrom, String _cardTo)
     {
         this.from = _from;
         this.to = _to;
@@ -56,6 +56,8 @@ public class aggregation extends JComponent
         int[] yPoly = {y, y + alpha,             y, y - alpha};
 
         Polygon poly = new Polygon(xPoly, yPoly, xPoly.length);
+        g.setColor(Color.BLACK);
+        g.fillPolygon(poly);
         g.drawPolygon(poly);
     }
 }

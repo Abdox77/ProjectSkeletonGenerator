@@ -1,15 +1,18 @@
 
+<!-- Currently working on -->
+
 
 <!-- Thoughts on what i should next -->
-0000- check for the validity of the cardinality
-1- change the input form specially types should be a list instead
-2- add a generate code button in the right bottom i guess
-3- add the possibility to edit a specific class
+    3- add the possibility to edit a specific class.
+    5- add the modify feature.
+    6- check if the relation already exists.
+    7- add association(forte - faible)
+    8- generate code logic
 
-
-
-<!-- File Structure --> 
-How i will be arranging my files:
+<!-- done -->
+    0- check for the validity of the cardinality.
+    1- change the input form specially types should be a list instead.
+    4- the classes should be generated in a somewhat random postion in the middle of the screen.
 
 
 

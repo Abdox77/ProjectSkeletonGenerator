@@ -1,9 +1,10 @@
 package View;
+import java.awt.BorderLayout;
+
+import javax.swing.JFrame;
+
 import View.tinkerPanel.tinkerPanel;
 import View.toolPanel.toolPanel;
-
-import javax.swing.*;
-import java.awt.*;
 
 
 public class appFrame extends JFrame {
@@ -16,7 +17,7 @@ public class appFrame extends JFrame {
 
     public appFrame() {
         setTitle(title);
-        setSize(WIDTH, HEIGHT);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         tinkerPanel = new tinkerPanel();
         toolPanel = new toolPanel(tinkerPanel);
         setLayout(new BorderLayout(10, 5));
@@ -24,12 +25,6 @@ public class appFrame extends JFrame {
         add(toolPanel, BorderLayout.LINE_START);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
-
-//    public void appListeners() {
-        // this.addWindowFocusListener();
-        // i should add it later, when the window is maximized so that i can
-        // change the size of the toolPanel and the size of the tinkeringPanel
-//    }
 
     public void render() {
         this.setVisible(true);
