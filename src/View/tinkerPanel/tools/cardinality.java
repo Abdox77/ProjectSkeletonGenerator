@@ -1,10 +1,8 @@
 package View.tinkerPanel.tools;
 
-import View.tinkerPanel.elements.classBox;
+import java.awt.Graphics;
 
-import javax.swing.*;
 import javax.swing.text.JTextComponent;
-import java.awt.*;
 
 public class cardinality extends JTextComponent {
     private final int x;
@@ -16,7 +14,6 @@ public class cardinality extends JTextComponent {
         x = _x;
         y = _y;
         s = _s;
-//        setBounds(_x, _y, 200, 200)
     }
 
     @Override

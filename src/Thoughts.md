@@ -7,14 +7,18 @@
     5- add the modify feature.
     6- check if the relation already exists.
     7- add association(forte - faible)
-    8- generate code logic
+    8- add the option of adding a className as an attribute type
+    9- generate code logic
+
+
+<!-- NONE ESSENTIALS -->
+
+
 
 <!-- done -->
     0- check for the validity of the cardinality.
     1- change the input form specially types should be a list instead.
     4- the classes should be generated in a somewhat random postion in the middle of the screen.
-
-
 
 
 <!-- Adding JPANELS To JFRAMES -->
@@ -24,7 +28,7 @@
     WEST   (left)
     CENTER (middle)
     
-    Jfram using grid Layout 
+    Jfram using grid Layout
     // new JFrame(new GridLayout(2, 1)); <- 2 rows 1 col
 
 <!-- Wrapping my head around GridLayout -->
@@ -96,3 +100,16 @@
 
 
 
+
+Calculating the shortest line between child classBox and parentClassBox
+
+<!-- Move point P by distance D at angle A --> 
+newX = P.x + D * cos(A)
+newY = P.y + D * sin(A)
+
+ <!-- Angle from point A to point B -->
+angle = atan2(B.y - A.y, B.x - A.x)
+
+<!-- Perpendicular directions: -->
+left = angle + π/2
+right = angle - π/2
