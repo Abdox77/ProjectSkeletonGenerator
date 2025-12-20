@@ -1,7 +1,13 @@
 package View.toolPanel.toolButtons;
 
+import java.awt.Frame;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import Controllers.toolPanelObserver;
-import javax.swing.*;
+import View.toolPanel.Dialogs.CompositionDialog;
 
 public class compostionButton extends AtoolButton {
     private toolPanelObserver observer;
@@ -12,20 +18,28 @@ public class compostionButton extends AtoolButton {
         super(ICON_NAME, MESSAGE_INFO);
         observer = _observer;
         addActionListener(e-> {
-            String firstClass = JOptionPane.showInputDialog("first <>--> second; Please first class name : ");
-            if (firstClass != null && !firstClass.isBlank())
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            List<String> classNames = observer.getClassNames();
+            
+            if (classNames.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Please create some classes first", 
+                    "No Classes", 
+                    JOptionPane.WARNING_MESSAGE);
                 return;
-            String secondClass = JOptionPane.showInputDialog("fist <>--> second; Please second class name : ");
-            if (secondClass != null && !secondClass.isBlank())
-                return;
-            String cardFirstClass = JOptionPane.showInputDialog("first <>--> second; Please enter first class cardinality");
-            if (cardFirstClass != null && !cardFirstClass.isBlank())
-                return;
-            String cardSecondClass = JOptionPane.showInputDialog("first <>--> second; Please enter second class cardinality");
-            if  (cardSecondClass != null && !cardSecondClass.isBlank())
-                return;
-
-            observer.onCompositionCreate(firstClass, secondClass, cardFirstClass, cardSecondClass);
+            }
+            
+            CompositionDialog dialog = new CompositionDialog(parentFrame, classNames);
+            dialog.setVisible(true);
+            
+            if (dialog.isConfirmed()) {
+                String firstClass = dialog.getFirstClass();
+                String secondClass = dialog.getSecondClass();
+                String cardFirstClass = dialog.getFirstCardinality();
+                String cardSecondClass = dialog.getSecondCardinality();
+                
+                observer.onCompositionCreate(firstClass, secondClass, cardFirstClass, cardSecondClass);
+            }
         });
     }
 }

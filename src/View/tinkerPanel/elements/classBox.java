@@ -1,14 +1,23 @@
 package View.tinkerPanel.elements;
 
-import View.tinkerPanel.DragHandler;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.classfile.Signature;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+
+import View.tinkerPanel.DragHandler;
 
 public class classBox extends JPanel {
     private JPopupMenu contextMenu;
@@ -21,9 +30,9 @@ public class classBox extends JPanel {
     public DragHandler dragHandler;
 
 
-    public classBox(String title) {
+    public classBox(String title, int x, int y) {
         setName(title);
-        setLayout();
+        setLayout(x, y);
         addClassName(title);
         attributePanel = defaultClassBoxPanel(1);
         methodsPanel = defaultClassBoxPanel(0);
@@ -31,9 +40,9 @@ public class classBox extends JPanel {
         initContextMenu();
     }
 
-    private void setLayout() {
+    private void setLayout(int x, int y) {
         setLayout(new BorderLayout());
-        setBounds(50, 50, 200, 200);
+        setBounds(x, y, 200, 200);
         setBackground(CLASSBOX_COLOR);
         setPreferredSize(new Dimension(200, 200));
         setBorder(BorderFactory.createLineBorder(Color.BLACK));

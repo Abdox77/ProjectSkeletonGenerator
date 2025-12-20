@@ -1,12 +1,16 @@
 package View.tinkerPanel.elements;
 
-import View.tinkerPanel.tools.cardinality;
-
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 public class inheritance extends JComponent {
     Line2D line;
