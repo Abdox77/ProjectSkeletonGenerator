@@ -12,6 +12,8 @@ import javax.swing.JPanel;
 import Controllers.toolPanelObserver;
 import View.appFrame;
 import View.toolPanel.toolButtons.aggregationButton;
+import View.toolPanel.toolButtons.associationFaibleButton;
+import View.toolPanel.toolButtons.associationForteButton;
 import View.toolPanel.toolButtons.classBoxButton;
 import View.toolPanel.toolButtons.compostionButton;
 import View.toolPanel.toolButtons.genCodeButton;
@@ -25,15 +27,17 @@ public class toolPanel extends JPanel {
         setPreferredSize(dimension);
         setLayout(new BorderLayout());
         setBackground(TOOLPANEL_BACKGROUND);
-        
-        JPanel toolButtonsPanel = new JPanel(new FlowLayout());
+
+        JPanel toolButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
         toolButtonsPanel.setBackground(TOOLPANEL_BACKGROUND);
         toolButtonsPanel.add(new classBoxButton(observer));
         toolButtonsPanel.add(new inheritanceButton(observer));
         toolButtonsPanel.add(new aggregationButton(observer));
         toolButtonsPanel.add(new compostionButton(observer));
-        add(toolButtonsPanel, BorderLayout.NORTH);
-        
+        toolButtonsPanel.add(new associationForteButton(observer));
+        toolButtonsPanel.add(new associationFaibleButton(observer));
+        add(toolButtonsPanel, BorderLayout.CENTER);
+
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         bottomPanel.setBackground(TOOLPANEL_BACKGROUND);
         genCodeButton genCodeButton = new genCodeButton();
@@ -50,7 +54,7 @@ public class toolPanel extends JPanel {
         genCodeButton.addActionListener(e -> {
             observer.generateCode();
         });
-        
+
         bottomPanel.add(genCodeButton);
         add(bottomPanel, BorderLayout.SOUTH);
     }
