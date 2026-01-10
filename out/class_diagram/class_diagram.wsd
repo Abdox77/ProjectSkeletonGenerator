@@ -1,0 +1,322 @@
+@startuml ProjectSkeletonGenerator
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam dpi 150
+
+package "View" {
+    class appFrame {
+        - toolPanel: toolPanel
+        - tinkerPanel: tinkerPanel
+        - dragOffset: Point
+        - normalBounds: Rectangle
+        - isMaximized: boolean
+        + render(): void
+        - createCustomTitleBar(): JPanel
+        - toggleMaximize(): void
+        - makeDraggable(): void
+    }
+}
+
+package "View.toolPanel" {
+    class toolPanel {
+        - TOOLPANEL_BACKGROUND: Color
+        + toolPanel(observer: toolPanelObserver)
+    }
+
+    abstract class AtoolButton {
+        - messageInfo: String
+        - IMG_DIR: String
+        - BUTTON_WIDTH: int
+        - BUTTON_HEIGHT: int
+        + getMessageInfo(): String
+    }
+
+    class classBoxButton
+    class inheritanceButton
+    class aggregationButton
+    class compostionButton
+    class associationForteButton
+    class associationFaibleButton
+    class genCodeButton
+}
+
+package "View.toolPanel.Dialogs" {
+    class inheritanceDialog {
+        - parentClassCombo: JComboBox
+        - childClassCombo: JComboBox
+        - confirmed: boolean
+        + isConfirmed(): boolean
+        + getParentClass(): String
+        + getChildClass(): String
+    }
+
+    class aggregationDialog {
+        - firstClassCombo: JComboBox
+        - secondClassCombo: JComboBox
+        - cardFirstCombo: JComboBox
+        - cardSecondCombo: JComboBox
+        - confirmed: boolean
+        + isConfirmed(): boolean
+        + getFirstClass(): String
+        + getSecondClass(): String
+    }
+
+    class CompositionDialog {
+        - firstClassCombo: JComboBox
+        - secondClassCombo: JComboBox
+        - confirmed: boolean
+        + isConfirmed(): boolean
+    }
+
+    class AssociationDialog {
+        - firstClassCombo: JComboBox
+        - secondClassCombo: JComboBox
+        - confirmed: boolean
+        + isConfirmed(): boolean
+    }
+
+    class AttributeDialog {
+        - nameField: JTextField
+        - typeCombo: JComboBox
+        - confirmed: boolean
+        + isConfirmed(): boolean
+        + getAttributeName(): String
+        + getAttributeType(): String
+    }
+
+    class MethodDialog {
+        - methodNameField: JTextField
+        - returnTypeCombo: JComboBox
+        - methodArgs: List
+        - confirmed: boolean
+        + isConfirmed(): boolean
+        + getMethodName(): String
+        + getReturnType(): String
+        + getMethodArgs(): List
+    }
+}
+
+package "View.tinkerPanel" {
+    class tinkerPanel {
+        - CLASS_WIDTH: int
+        - CLASS_HEIGHT: int
+        - MARGIN: int
+        - classBoxList: List
+        - inheritanceList: List
+        - aggregationList: List
+        - compositionList: List
+        - associationForteList: List
+        - associationFaibleList: List
+        + onClassCreate(event: String): void
+        + onInheritanceCreate(parent: String, child: String): void
+        + onAggregationCreate(): void
+        + onCompositionCreate(): void
+        + onAssociationForteCreate(): void
+        + onAssociationFaibleCreate(): void
+        + generateCode(): void
+        + getClassNames(): List
+        + deleteClassBox(box: classBox): void
+    }
+
+    class DragHandler {
+        - last: Point
+        - clampedToParent: boolean
+        - dragTarget: JComponent
+        + mousePressed(e: MouseEvent): void
+        + mouseDragged(e: MouseEvent): void
+        + mouseReleased(e: MouseEvent): void
+    }
+}
+
+package "View.tinkerPanel.elements" {
+    class classBox {
+        - contextMenu: JPopupMenu
+        - nameLabel: JLabel
+        - attributePanel: JPanel
+        - methodsPanel: JPanel
+        - attributesList: List
+        - methodsList: List
+        + dragHandler: DragHandler
+        + getAttributesList(): List
+        + getMethodsList(): List
+        + getName(): String
+    }
+
+    class MethodData {
+        + returnType: String
+        + name: String
+        + arguments: List
+    }
+
+    class inheritance {
+        - child: classBox
+        - parent: classBox
+        - ARROW_SIZE: int
+        - relationIndex: int
+        + paintComponent(g: Graphics): void
+        + getChild(): classBox
+        + getParent(): classBox
+        + setRelationIndex(index: int): void
+    }
+
+    class aggregation {
+        - from: classBox
+        - to: classBox
+        - cardFrom: String
+        - cardTo: String
+        - relationIndex: int
+        + paintComponent(g: Graphics): void
+        + getFrom(): classBox
+        + getTo(): classBox
+        + setRelationIndex(index: int): void
+    }
+
+    class composition {
+        - from: classBox
+        - to: classBox
+        - cardFrom: String
+        - cardTo: String
+        - relationIndex: int
+        + paintComponent(g: Graphics): void
+        + getFrom(): classBox
+        + getTo(): classBox
+        + setRelationIndex(index: int): void
+    }
+
+    class associationForte {
+        - from: classBox
+        - to: classBox
+        - cardFrom: String
+        - cardTo: String
+        - relationIndex: int
+        + paintComponent(g: Graphics): void
+        + getFrom(): classBox
+        + getTo(): classBox
+        + setRelationIndex(index: int): void
+    }
+
+    class associationFaible {
+        - from: classBox
+        - to: classBox
+        - cardFrom: String
+        - cardTo: String
+        - relationIndex: int
+        + paintComponent(g: Graphics): void
+        + getFrom(): classBox
+        + getTo(): classBox
+        + setRelationIndex(index: int): void
+    }
+}
+
+package "Controllers" {
+    interface toolPanelObserver {
+        + onClassCreate(className: String): void
+        + onInheritanceCreate(parent: String, child: String): void
+        + onAggregationCreate(): void
+        + onCompositionCreate(): void
+        + onAssociationForteCreate(): void
+        + onAssociationFaibleCreate(): void
+        + getClassNames(): List
+        + generateCode(): void
+    }
+}
+
+package "Model" {
+    class ClassModel {
+        - name: String
+        - attributes: List
+        - methods: List
+        - parents: List
+        - relationships: List
+        + addAttribute(type: String, name: String): void
+        + addMethod(): void
+        + addParent(parent: String): void
+        + addRelationship(rel: Relationship): void
+        + getName(): String
+        + getAttributes(): List
+        + getMethods(): List
+        + getParents(): List
+        + getRelationships(): List
+    }
+
+    class Attribute {
+        - type: String
+        - name: String
+        + getType(): String
+        + getName(): String
+    }
+
+    class Method {
+        - returnType: String
+        - name: String
+        - arguments: List
+        + getReturnType(): String
+        + getName(): String
+        + getArguments(): List
+    }
+
+    class Relationship {
+        - type: RelationType
+        - targetClass: String
+        - cardinality: String
+        + getType(): RelationType
+        + getTargetClass(): String
+        + getCardinality(): String
+    }
+
+    enum RelationType {
+        AGGREGATION
+        COMPOSITION
+        ASSOCIATION_FORTE
+        ASSOCIATION_FAIBLE
+    }
+
+    class CodeGenerator {
+        - classModels: Map
+        - outputDirectory: String
+        + generateCode(): void
+        - generateClassFile(model: ClassModel): void
+        - generateClassCode(model: ClassModel): String
+        - generateConstructor(model: ClassModel): String
+        - generateGetter(attr: Attribute): String
+        - generateSetter(attr: Attribute): String
+        - generateMethod(method: Method): String
+        - mapType(type: String): String
+    }
+}
+
+appFrame *-- toolPanel
+appFrame *-- tinkerPanel
+classBox *-- MethodData
+
+tinkerPanel o-- classBox
+tinkerPanel o-- inheritance
+tinkerPanel o-- aggregation
+tinkerPanel o-- composition
+tinkerPanel o-- associationForte
+tinkerPanel o-- associationFaible
+
+ClassModel o-- Attribute
+ClassModel o-- Method
+ClassModel o-- Relationship
+
+classBoxButton --|> AtoolButton
+inheritanceButton --|> AtoolButton
+aggregationButton --|> AtoolButton
+compostionButton --|> AtoolButton
+associationForteButton --|> AtoolButton
+associationFaibleButton --|> AtoolButton
+
+tinkerPanel ..|> toolPanelObserver
+
+toolPanel ..> toolPanelObserver
+inheritance --> classBox
+aggregation --> classBox
+composition --> classBox
+associationForte --> classBox
+associationFaible --> classBox
+CodeGenerator ..> ClassModel
+Relationship --> RelationType
+
+@enduml
