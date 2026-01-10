@@ -18,6 +18,8 @@ public class composition extends JComponent {
     private final String cardFrom;
     private final String cardTo;
     private final int ALPHA = 12;
+    private int relationIndex = 0;
+    private static final int LINE_OFFSET = 15;
 
     public composition(classBox from, classBox to, String cardFrom, String cardTo) {
         this.from = from;
@@ -25,6 +27,10 @@ public class composition extends JComponent {
         this.cardFrom = cardFrom;
         this.cardTo = cardTo;
         setOpaque(false);
+    }
+
+    public void setRelationIndex(int index) {
+        this.relationIndex = index;
     }
 
     @Override
@@ -38,8 +44,8 @@ public class composition extends JComponent {
         Point2D fromCenter = SwingUtilities.convertPoint(from, from.getWidth() / 2, from.getHeight() / 2, this);
         Point2D toCenter = SwingUtilities.convertPoint(to, to.getWidth() / 2, to.getHeight() / 2, this);
         Point2D[] points = getConnectionPoints(fromCenter, toCenter);
-        Point2D p1 = points[0];
-        Point2D p2 = points[1];
+        Point2D p1 = applyOffset(points[0], fromCenter, toCenter);
+        Point2D p2 = applyOffset(points[1], fromCenter, toCenter);
         double angle = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
         Point2D lineStart = new Point2D.Double(
             p1.getX() + 2 * ALPHA * Math.cos(angle),
@@ -51,6 +57,19 @@ public class composition extends JComponent {
         drawCardinality(g2, p1, angle, cardFrom, true);
         drawCardinality(g2, p2, angle, cardTo, false);
         g2.dispose();
+    }
+
+    private Point2D applyOffset(Point2D point, Point2D fromCenter, Point2D toCenter) {
+        if (relationIndex == 0) return point;
+        
+        double angle = Math.atan2(toCenter.getY() - fromCenter.getY(), toCenter.getX() - fromCenter.getX());
+        double perpAngle = angle + Math.PI / 2;
+        double offset = relationIndex * LINE_OFFSET;
+        
+        return new Point2D.Double(
+            point.getX() + offset * Math.cos(perpAngle),
+            point.getY() + offset * Math.sin(perpAngle)
+        );
     }
 
     private Point2D[] getConnectionPoints(Point2D fromCenter, Point2D toCenter) {
@@ -109,4 +128,9 @@ public class composition extends JComponent {
         }
         g.drawString(card, x, y);
     }
+
+    public classBox getFrom() { return from; }
+    public classBox getTo() { return to; }
+    public String getCardFrom() { return cardFrom; }
+    public String getCardTo() { return cardTo; }
 }

@@ -1,16 +1,24 @@
 package View.tinkerPanel;
 
+
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import Controllers.toolPanelObserver;
+import Model.ClassModel;
+import Model.CodeGenerator;
+import Model.Relationship;
 import View.tinkerPanel.elements.aggregation;
 import View.tinkerPanel.elements.classBox;
 import View.tinkerPanel.elements.composition;
@@ -37,10 +45,10 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
         compositionList = new ArrayList<composition>();
         random = new Random();
 
-        classBox child = createClassBox("h");
-        classBox parent = createClassBox("w");
-        addClassBox(child);
-        addClassBox(parent);
+        // classBox child = createClassBox("h");
+        // classBox parent = createClassBox("w");
+        // addClassBox(child);
+        // addClassBox(parent);
 
         this.setLayout(null);
         this.setBackground(TINKERPANEL_BACKGROUND);
@@ -61,8 +69,11 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
         for (aggregation agg : aggregationList) {
             agg.setBounds(0, 0, bounds.width, bounds.height);
         }
+        for (composition comp : compositionList) {
+            comp.setBounds(0, 0, bounds.width, bounds.height);
+        }
         repaint();
-    }
+}
 
     private void addClassBox(classBox classBox)
     {
@@ -91,6 +102,9 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
         }
         for (aggregation agg : aggregationList) {
             agg.repaint();
+        }
+        for (composition comp : compositionList) {
+            comp.repaint();
         }
     }
 
@@ -130,8 +144,30 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
         addAggregation(createNewAggregation(_first, _second, cardFirst, cardSecond));
     }
 
+    private int countRelationsBetween(classBox a, classBox b) {
+        int count = 0;
+        for (aggregation agg : aggregationList) {
+            if ((agg.getFrom() == a && agg.getTo() == b) || (agg.getFrom() == b && agg.getTo() == a)) {
+                count++;
+            }
+        }
+        for (composition comp : compositionList) {
+            if ((comp.getFrom() == a && comp.getTo() == b) || (comp.getFrom() == b && comp.getTo() == a)) {
+                count++;
+            }
+        }
+        for (inheritance inh : inheritanceList) {
+            if ((inh.getChild() == a && inh.getParent() == b) || (inh.getChild() == b && inh.getParent() == a)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private void addAggregation(aggregation a)
     {
+        int index = countRelationsBetween(a.getFrom(), a.getTo());
+        a.setRelationIndex(index);
         Rectangle bounds = getBounds();
         a.setBounds(0, 0, bounds.width, bounds.height);
         aggregationList.add(a);
@@ -162,6 +198,8 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
     }
 
     private void addComposition(composition c) {
+        int index = countRelationsBetween(c.getFrom(), c.getTo());
+        c.setRelationIndex(index);
         Rectangle bounds = getBounds();
         c.setBounds(0, 0, bounds.width, bounds.height);
         compositionList.add(c);
@@ -177,7 +215,7 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
         classBox _parent = getClassBox(parent);
         classBox _child = getClassBox(child);
 
-        if(parent == null || child == null) return;
+        if(_parent == null || _child == null) return;
         addInheritance(createInheritance(_parent, _child));
     }
 
@@ -185,6 +223,91 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
     public void generateCode()
     {
         System.out.println("i got notified generation code");
+        if (classBoxList.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "No classes to generate code from!",
+                "Empty Diagram",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setDialogTitle("Select Output Directory");
+
+        int result = chooser.showSaveDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        
+                String outputDir = chooser.getSelectedFile().getAbsolutePath();
+        
+        try {
+            Map<String, ClassModel> models = buildClassModels();
+            CodeGenerator generator = new CodeGenerator(models, outputDir);
+            generator.generateCode();
+            
+            JOptionPane.showMessageDialog(this,
+                "Code generated successfully at:\n" + outputDir,
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                "Error generating code: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+
+    }
+
+        private Map<String, ClassModel> buildClassModels() {
+        Map<String, ClassModel> models = new HashMap<>();
+
+        for (classBox box : classBoxList) {
+            ClassModel model = new ClassModel(box.getName());
+
+            for (String[] attr : box.getAttributesList()) {
+                model.addAttribute(attr[0], attr[1]);
+            }
+            
+            for (classBox.MethodData method : box.getMethodsList()) {
+                model.addMethod(method.returnType, method.name, method.arguments);
+            }
+            
+            models.put(box.getName(), model);
+        }
+        
+        for (inheritance inh : inheritanceList) {
+            String childName = inh.getChild().getName();
+            String parentName = inh.getParent().getName();
+            
+            if (models.containsKey(childName)) {
+                models.get(childName).addParent(parentName);
+            }
+        }
+     
+        for (aggregation agg : aggregationList) {
+            addRelationshipToModel(models, agg.getFrom(), agg.getTo(), 
+                                Relationship.RelationType.AGGREGATION, agg.getCardTo());
+        }
+
+        for (composition comp : compositionList) {
+            addRelationshipToModel(models, comp.getFrom(), comp.getTo(),
+                                 Relationship.RelationType.COMPOSITION, comp.getCardTo());
+        }
+
+        return models;
+    }
+
+    private void addRelationshipToModel(Map<String, ClassModel> models, classBox from, 
+                                       classBox to, Relationship.RelationType type, String cardinality) {
+        String fromName = from.getName();
+        if (models.containsKey(fromName)) {
+            models.get(fromName).addRelationship(
+                new Relationship(type, to.getName(), cardinality)
+            );
+        }
     }
 
     @Override
@@ -197,6 +320,8 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
     }
 
     private void addInheritance(inheritance inheritance) {
+        int index = countRelationsBetween(inheritance.getChild(), inheritance.getParent());
+        inheritance.setRelationIndex(index);
         Rectangle bounds = getBounds();
         inheritance.setBounds(0, 0, bounds.width, bounds.height);
         inheritanceList.add(inheritance);
