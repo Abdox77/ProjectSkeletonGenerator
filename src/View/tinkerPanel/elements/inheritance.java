@@ -10,17 +10,22 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 
 public class inheritance extends JComponent {
     private final classBox child;
     private final classBox parent;
-    private final int ALPHA = 15;
+    private final int ARROW_SIZE = 12;
+    private int relationIndex = 0;
+    private static final int LINE_OFFSET = 15;
 
     public inheritance(classBox child, classBox parent) {
         this.child = child;
         this.parent = parent;
         setOpaque(false);
+    }
+
+    public void setRelationIndex(int index) {
+        this.relationIndex = index;
     }
 
     @Override
@@ -31,22 +36,45 @@ public class inheritance extends JComponent {
         g2.setStroke(new BasicStroke(2f));
         g2.setColor(Color.BLACK);
 
-        Point2D childCenter = SwingUtilities.convertPoint(child, child.getWidth() / 2, child.getHeight() / 2, this);
-        Point2D parentCenter = SwingUtilities.convertPoint(parent, parent.getWidth() / 2, parent.getHeight() / 2, this);
+        java.awt.Point childLoc = child.getLocation();
+        java.awt.Point parentLoc = parent.getLocation();
+        
+        double childCenterX = childLoc.x + child.getWidth() / 2.0;
+        double childCenterY = childLoc.y + child.getHeight() / 2.0;
+        double parentCenterX = parentLoc.x + parent.getWidth() / 2.0;
+        double parentCenterY = parentLoc.y + parent.getHeight() / 2.0;
+
+        Point2D childCenter = new Point2D.Double(childCenterX, childCenterY);
+        Point2D parentCenter = new Point2D.Double(parentCenterX, parentCenterY);
 
         Point2D[] points = getConnectionPoints(childCenter, parentCenter);
-        Point2D p1 = points[0]; 
-        Point2D p2 = points[1]; 
+        Point2D p1 = applyOffset(points[0], childCenter, parentCenter);
+        Point2D p2 = applyOffset(points[1], childCenter, parentCenter);
 
         double angle = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+        
         Point2D lineEnd = new Point2D.Double(
-            p2.getX() - ALPHA * Math.cos(angle),
-            p2.getY() - ALPHA * Math.sin(angle)
+            p2.getX() - ARROW_SIZE * Math.cos(angle),
+            p2.getY() - ARROW_SIZE * Math.sin(angle)
         );
         
         g2.draw(new Line2D.Double(p1, lineEnd));
-        drawInheritanceHead(g2, p2, p1);
+        
+        drawInheritanceHead(g2, p2, angle);
         g2.dispose();
+    }
+
+    private Point2D applyOffset(Point2D point, Point2D fromCenter, Point2D toCenter) {
+        if (relationIndex == 0) return point;
+        
+        double angle = Math.atan2(toCenter.getY() - fromCenter.getY(), toCenter.getX() - fromCenter.getX());
+        double perpAngle = angle + Math.PI / 2;
+        double offset = relationIndex * LINE_OFFSET;
+        
+        return new Point2D.Double(
+            point.getX() + offset * Math.cos(perpAngle),
+            point.getY() + offset * Math.sin(perpAngle)
+        );
     }
 
     private Point2D[] getConnectionPoints(Point2D childCenter, Point2D parentCenter) {
@@ -75,29 +103,34 @@ public class inheritance extends JComponent {
         return new Point2D[]{childEdge, parentEdge};
     }
 
-    private void drawInheritanceHead(Graphics2D g, Point2D tip, Point2D from) {
-        double dx = tip.getX() - from.getX();
-        double dy = tip.getY() - from.getY();
-        double angle = Math.atan2(dy, dx);
+    private void drawInheritanceHead(Graphics2D g, Point2D tip, double angle) {
+        double arrowHalfWidth = ARROW_SIZE * 0.5;
+        
+        int tipX = (int) tip.getX();
+        int tipY = (int) tip.getY();
+        
+        double baseCenterX = tip.getX() - ARROW_SIZE * Math.cos(angle);
+        double baseCenterY = tip.getY() - ARROW_SIZE * Math.sin(angle);
+        
+        double perpAngle = angle + Math.PI / 2;
+        
+        int leftX = (int) (baseCenterX + arrowHalfWidth * Math.cos(perpAngle));
+        int leftY = (int) (baseCenterY + arrowHalfWidth * Math.sin(perpAngle));
+        
+        int rightX = (int) (baseCenterX - arrowHalfWidth * Math.cos(perpAngle));
+        int rightY = (int) (baseCenterY - arrowHalfWidth * Math.sin(perpAngle));
 
-        int baseX = (int) (tip.getX() - ALPHA * Math.cos(angle));
-        int baseY = (int) (tip.getY() - ALPHA * Math.sin(angle));
-
-        int[] xPoly = {
-            (int) tip.getX(),
-            (int) (baseX + ALPHA * Math.cos(angle + Math.PI / 2) / 2),
-            (int) (baseX + ALPHA * Math.cos(angle - Math.PI / 2) / 2)
-        };
-        int[] yPoly = {
-            (int) tip.getY(),
-            (int) (baseY + ALPHA * Math.sin(angle + Math.PI / 2) / 2),
-            (int) (baseY + ALPHA * Math.sin(angle - Math.PI / 2) / 2)
-        };
-
-        Polygon poly = new Polygon(xPoly, yPoly, 3);
+        int[] xPoints = {tipX, leftX, rightX};
+        int[] yPoints = {tipY, leftY, rightY};
+        
+        Polygon arrow = new Polygon(xPoints, yPoints, 3);
+        
         g.setColor(Color.WHITE);
-        g.fillPolygon(poly);
+        g.fillPolygon(arrow);
         g.setColor(Color.BLACK);
-        g.drawPolygon(poly);
+        g.drawPolygon(arrow);
     }
+
+    public classBox getChild() { return child; }
+    public classBox getParent() { return parent; }
 }

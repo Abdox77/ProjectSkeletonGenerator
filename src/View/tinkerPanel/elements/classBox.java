@@ -31,10 +31,14 @@ public class classBox extends JPanel {
     private ArrayList<JLabel> attributes;
     private final Color CLASSBOX_COLOR = Color.LIGHT_GRAY;
     public DragHandler dragHandler;
+    private List<String[]> attributesList;
+    private List<MethodData> methodsList;
 
 
     public classBox(String title, int x, int y) {
         setName(title);
+        attributesList = new ArrayList<>();
+        methodsList = new ArrayList<>();
         setLayout(x, y);
         addClassName(title);
         attributePanel = defaultClassBoxPanel(1);
@@ -141,6 +145,7 @@ public class classBox extends JPanel {
     }
 
     private void createNewAttr(String type, String name) {
+        attributesList.add(new String[]{type, name});
         JLabel attr = new JLabel("- " + name + ": " + type.toUpperCase());
         attr.setOpaque(true);
         attr.setBackground(CLASSBOX_COLOR);
@@ -156,6 +161,7 @@ public class classBox extends JPanel {
             System.out.println("the return type is invalid");
             return;
         }
+        methodsList.add(new MethodData(returnType, methodName, methodArgs));
         JLabel attr = new JLabel();
         attr.setText(buildMethodString(returnType, methodName, methodArgs));
         attr.setOpaque(true);
@@ -165,6 +171,26 @@ public class classBox extends JPanel {
         methodsPanel.add(attr);
         methodsPanel.revalidate();
         methodsPanel.repaint();
+    }
+
+    public List<String[]> getAttributesList() {
+        return new ArrayList<>(attributesList);
+    }
+    
+    public List<MethodData> getMethodsList() {
+        return new ArrayList<>(methodsList);
+    }
+
+    public static class MethodData {
+        public String returnType;
+        public String name;
+        public List<String[]> arguments;
+        
+        public MethodData(String returnType, String name, List<String[]> arguments) {
+            this.returnType = returnType;
+            this.name = name;
+            this.arguments = new ArrayList<>(arguments);
+        }
     }
 
     private String buildMethodString(String returnType, String methodName, List<String[]> methodArgs) {
