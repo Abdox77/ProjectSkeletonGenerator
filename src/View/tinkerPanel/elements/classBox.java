@@ -3,6 +3,7 @@ package View.tinkerPanel.elements;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.MouseAdapter;
@@ -14,6 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -91,9 +93,12 @@ public class classBox extends JPanel {
 
         JMenuItem addAttr = getAttrJMenuItem();
         JMenuItem addMethod = getMethodJMenuItem();
+        JMenuItem deleteClass = getDeleteJMenuItem();
 
         contextMenu.add(addAttr);
         contextMenu.add(addMethod);
+        contextMenu.addSeparator();
+        contextMenu.add(deleteClass);
         MouseAdapter mouseAdapter = new MouseAdapter() {
             private void displayPopUp(MouseEvent e) {
                 if (e.isPopupTrigger()) {
@@ -142,6 +147,32 @@ public class classBox extends JPanel {
             }
         });
         return addMethod;
+    }
+
+    private JMenuItem getDeleteJMenuItem() {
+        JMenuItem deleteClass = new JMenuItem("Delete Class");
+        deleteClass.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete '" + getName() + "'?\nThis will also remove all its relations.",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                Container parent = getParent();
+                if (parent != null) {
+                    java.lang.reflect.Method method;
+                    try {
+                        method = parent.getClass().getMethod("deleteClassBox", classBox.class);
+                        method.invoke(parent, this);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+        return deleteClass;
     }
 
     private void createNewAttr(String type, String name) {
