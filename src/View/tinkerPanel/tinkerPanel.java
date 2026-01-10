@@ -412,7 +412,7 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
     }
 
     private inheritance createInheritance(classBox _parent, classBox _child) {
-        return new inheritance(_parent, _child);
+        return new inheritance(_child, _parent);
     }
 
     private classBox getClassBox(String className) {
@@ -420,5 +420,52 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
             if (classBox.getName().equals(className)) return classBox;
         }
         return null;
+    }
+
+    public void deleteClassBox(classBox box) {
+        inheritanceList.removeIf(inh -> {
+            if (inh.getChild() == box || inh.getParent() == box) {
+                remove(inh);
+                return true;
+            }
+            return false;
+        });
+
+        aggregationList.removeIf(agg -> {
+            if (agg.getFrom() == box || agg.getTo() == box) {
+                remove(agg);
+                return true;
+            }
+            return false;
+        });
+
+        compositionList.removeIf(comp -> {
+            if (comp.getFrom() == box || comp.getTo() == box) {
+                remove(comp);
+                return true;
+            }
+            return false;
+        });
+
+        associationForteList.removeIf(assoc -> {
+            if (assoc.getFrom() == box || assoc.getTo() == box) {
+                remove(assoc);
+                return true;
+            }
+            return false;
+        });
+
+        associationFaibleList.removeIf(assoc -> {
+            if (assoc.getFrom() == box || assoc.getTo() == box) {
+                remove(assoc);
+                return true;
+            }
+            return false;
+        });
+
+        classBoxList.remove(box);
+        remove(box);
+        revalidate();
+        repaint();
     }
 }
