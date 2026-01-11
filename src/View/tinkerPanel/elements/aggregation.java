@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
@@ -41,6 +42,12 @@ public class aggregation extends JComponent {
         g2.setStroke(new BasicStroke(2f));
         g2.setColor(Color.BLACK);
 
+        if (from == to) {
+            drawSelfRelation(g2);
+            g2.dispose();
+            return;
+        }
+
         Point2D fromCenter = SwingUtilities.convertPoint(from, from.getWidth() / 2, from.getHeight() / 2, this);
         Point2D toCenter = SwingUtilities.convertPoint(to, to.getWidth() / 2, to.getHeight() / 2, this);
 
@@ -62,6 +69,38 @@ public class aggregation extends JComponent {
         drawCardinality(g2, p2, angle, cardTo, false);
         
         g2.dispose();
+    }
+
+    private void drawSelfRelation(Graphics2D g2) {
+        Point2D loc = SwingUtilities.convertPoint(from.getParent(), from.getX(), from.getY(), this);
+        int x = (int) loc.getX();
+        int y = (int) loc.getY();
+        int w = from.getWidth();
+        int h = from.getHeight();
+
+        int loopSize = 40 + relationIndex * LINE_OFFSET;
+        int startX = x + w;
+        int startY = y + h / 3;
+        int endX = x + w / 2 + 20;
+        int endY = y;
+
+        Path2D path = new Path2D.Double();
+        path.moveTo(startX, startY);
+        path.lineTo(startX + loopSize, startY);
+        path.lineTo(startX + loopSize, endY - loopSize);
+        path.lineTo(endX, endY - loopSize);
+        path.lineTo(endX, endY);
+
+        Point2D lineStart = new Point2D.Double(startX + 2 * ALPHA, startY);
+        g2.draw(new Line2D.Double(lineStart.getX(), lineStart.getY(), startX + loopSize, startY));
+        g2.draw(new Line2D.Double(startX + loopSize, startY, startX + loopSize, endY - loopSize));
+        g2.draw(new Line2D.Double(startX + loopSize, endY - loopSize, endX, endY - loopSize));
+        g2.draw(new Line2D.Double(endX, endY - loopSize, endX, endY));
+
+        drawAggregationHead(g2, new Point2D.Double(startX, startY), 0);
+
+        g2.drawString(cardFrom, startX + loopSize + 5, startY - 5);
+        g2.drawString(cardTo, endX + 5, endY - loopSize + 15);
     }
 
     private Point2D applyOffset(Point2D point, Point2D fromCenter, Point2D toCenter) {
