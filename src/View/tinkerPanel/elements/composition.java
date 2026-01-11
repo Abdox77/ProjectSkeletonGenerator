@@ -40,6 +40,12 @@ public class composition extends JComponent {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setStroke(new BasicStroke(2f));
         g2.setColor(Color.BLACK);
+
+        if (from == to) {
+            drawSelfRelation(g2);
+            g2.dispose();
+            return;
+        }
         
         Point2D fromCenter = SwingUtilities.convertPoint(from, from.getWidth() / 2, from.getHeight() / 2, this);
         Point2D toCenter = SwingUtilities.convertPoint(to, to.getWidth() / 2, to.getHeight() / 2, this);
@@ -57,6 +63,31 @@ public class composition extends JComponent {
         drawCardinality(g2, p1, angle, cardFrom, true);
         drawCardinality(g2, p2, angle, cardTo, false);
         g2.dispose();
+    }
+
+    private void drawSelfRelation(Graphics2D g2) {
+        Point2D loc = SwingUtilities.convertPoint(from.getParent(), from.getX(), from.getY(), this);
+        int x = (int) loc.getX();
+        int y = (int) loc.getY();
+        int w = from.getWidth();
+        int h = from.getHeight();
+
+        int loopSize = 40 + relationIndex * LINE_OFFSET;
+        int startX = x + w;
+        int startY = y + h / 3;
+        int endX = x + w / 2 + 20;
+        int endY = y;
+
+        Point2D lineStart = new Point2D.Double(startX + 2 * ALPHA, startY);
+        g2.draw(new Line2D.Double(lineStart.getX(), lineStart.getY(), startX + loopSize, startY));
+        g2.draw(new Line2D.Double(startX + loopSize, startY, startX + loopSize, endY - loopSize));
+        g2.draw(new Line2D.Double(startX + loopSize, endY - loopSize, endX, endY - loopSize));
+        g2.draw(new Line2D.Double(endX, endY - loopSize, endX, endY));
+
+        drawCompositionHead(g2, new Point2D.Double(startX, startY), 0);
+
+        g2.drawString(cardFrom, startX + loopSize + 5, startY - 5);
+        g2.drawString(cardTo, endX + 5, endY - loopSize + 15);
     }
 
     private Point2D applyOffset(Point2D point, Point2D fromCenter, Point2D toCenter) {
