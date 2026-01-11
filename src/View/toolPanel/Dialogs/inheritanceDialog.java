@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -14,13 +15,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-public class inheritanceDialog extends JDialog{
+public class inheritanceDialog extends JDialog {
     private JComboBox<String> parentClassCombo;
     private JComboBox<String> childClassCombo;
     private boolean confirmed = false;
+    private Set<String> classesWithParent;
 
-    public inheritanceDialog(Frame parent, List<String> classNames) {
+    public inheritanceDialog(Frame parent, List<String> classNames, Set<String> classesWithParent) {
         super(parent, "Create Inheritance", true);
+        this.classesWithParent = classesWithParent;
         initComponent(classNames);
         setLocationRelativeTo(parent);
     }
@@ -31,7 +34,7 @@ public class inheritanceDialog extends JDialog{
         JPanel formPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        formPanel.add(new JLabel("Parent Class :"));
+        formPanel.add(new JLabel("Parent Class:"));
         parentClassCombo = new JComboBox<>(classNames.toArray(new String[0]));
         formPanel.add(parentClassCombo);
 
@@ -64,8 +67,7 @@ public class inheritanceDialog extends JDialog{
         pack();
     }
 
-    private boolean validateInput()
-    {
+    private boolean validateInput() {
         if (parentClassCombo.getSelectedItem() == null || 
             childClassCombo.getSelectedItem() == null) {
             JOptionPane.showMessageDialog(this, 
@@ -80,7 +82,15 @@ public class inheritanceDialog extends JDialog{
         
         if (parent.equals(child)) {
             JOptionPane.showMessageDialog(this, 
-                "Parent and child classes must be different", 
+                "Self-inheritance is not allowed.\nA class cannot inherit from itself.", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        if (classesWithParent.contains(child)) {
+            JOptionPane.showMessageDialog(this, 
+                "Multiple inheritance is not allowed.\n'" + child + "' already extends another class.", 
                 "Validation Error", 
                 JOptionPane.ERROR_MESSAGE);
             return false;

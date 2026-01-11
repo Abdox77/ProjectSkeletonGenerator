@@ -7,9 +7,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -288,6 +290,15 @@ public class tinkerPanel extends JPanel implements toolPanelObserver
         add(a);
         revalidate();
         repaint();
+    }
+
+    @Override
+    public Set<String> getClassesWithParent() {
+        Set<String> classesWithParent = new HashSet<>();
+        for (inheritance inh : inheritanceList) {
+            classesWithParent.add(inh.getChild().getName());
+        }
+        return classesWithParent;
     }
 
     @Override

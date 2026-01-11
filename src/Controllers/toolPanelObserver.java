@@ -1,15 +1,16 @@
 package Controllers;
 
 import java.util.List;
+import java.util.Set;
 
 public interface toolPanelObserver {
-    public void onClassCreate(String className);
-    public void onInheritanceCreate(String parent, String child);
-    public void onAggregationCreate(String firstClass, String secondClass, String cardFirstClass, String cardSecondClass);
-    public void onCompositionCreate(String firstClass, String secondClass, String cardFirst, String cardSecond);
-    public void onAssociationForteCreate(String firstClass, String secondClass, String cardFirst, String cardSecond);
-    public void onAssociationFaibleCreate(String firstClass, String secondClass, String cardFirst, String cardSecond);
-    public List<String> getClassNames();
-    public void generateCode();
+    void onClassCreate(String className);
+    void onInheritanceCreate(String parent, String child);
+    void onAggregationCreate(String firstClass, String secondClass, String cardFirstClass, String cardSecondClass);
+    void onCompositionCreate(String firstClass, String secondClass, String cardFirst, String cardSecond);
+    void onAssociationForteCreate(String firstClass, String secondClass, String cardFirst, String cardSecond);
+    void onAssociationFaibleCreate(String firstClass, String secondClass, String cardFirst, String cardSecond);
+    List<String> getClassNames();
+    Set<String> getClassesWithParent();
+    void generateCode();
 }
-

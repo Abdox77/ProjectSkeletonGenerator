@@ -2,6 +2,7 @@ package View.toolPanel.toolButtons;
 
 import java.awt.Frame;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -27,7 +28,8 @@ public class inheritanceButton extends AtoolButton {
                 return;
             }
             
-            inheritanceDialog dialog = new inheritanceDialog(parentFrame, classNames);
+            Set<String> classesWithParent = observer.getClassesWithParent();
+            inheritanceDialog dialog = new inheritanceDialog(parentFrame, classNames, classesWithParent);
             dialog.setVisible(true);
             
             if (dialog.isConfirmed()) {
