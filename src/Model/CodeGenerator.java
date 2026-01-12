@@ -81,12 +81,27 @@ public class CodeGenerator {
         code.append("    public ").append(classModel.getName()).append("(");
 
         List<ClassModel.Attribute> attrs = classModel.getAttributes();
+        List<Relationship> constructorRels = getConstructorRelationships(classModel);
+        
+        int paramCount = 0;
+        
         for (int i = 0; i < attrs.size(); i++) {
             ClassModel.Attribute attr = attrs.get(i);
-            code.append(mapType(attr.getType())).append(" ").append(attr.getName());
-            if (i < attrs.size() - 1) {
+            if (paramCount > 0) {
                 code.append(", ");
             }
+            code.append(mapType(attr.getType())).append(" ").append(attr.getName());
+            paramCount++;
+        }
+        
+        for (Relationship rel : constructorRels) {
+            if (paramCount > 0) {
+                code.append(", ");
+            }
+            String type = determineAttributeType(rel);
+            String paramName = rel.getTargetClass().toLowerCase();
+            code.append(type).append(" ").append(paramName);
+            paramCount++;
         }
 
         code.append(") {\n");
@@ -95,10 +110,38 @@ public class CodeGenerator {
             code.append("        this.").append(attr.getName())
                     .append(" = ").append(attr.getName()).append(";\n");
         }
+        
+        for (Relationship rel : constructorRels) {
+            String paramName = rel.getTargetClass().toLowerCase();
+            code.append("        this.").append(paramName)
+                    .append(" = ").append(paramName).append(";\n");
+        }
 
         code.append("    }\n\n");
 
         return code.toString();
+    }
+    
+    private List<Relationship> getConstructorRelationships(ClassModel classModel) {
+        List<Relationship> constructorRels = new java.util.ArrayList<>();
+        
+        for (Relationship rel : classModel.getRelationships()) {
+            Relationship.RelationType type = rel.getType();
+            String cardinality = rel.getCardinality();
+            
+            if (type == Relationship.RelationType.COMPOSITION) {
+                if (!cardinality.contains("*")) {
+                    constructorRels.add(rel);
+                }
+            }
+            else if (type == Relationship.RelationType.ASSOCIATION_FORTE) {
+                if (cardinality.startsWith("1") && !cardinality.contains("*")) {
+                    constructorRels.add(rel);
+                }
+            }
+        }
+        
+        return constructorRels;
     }
 
     private String generateGetter(ClassModel.Attribute attr) {

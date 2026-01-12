@@ -1,11 +1,15 @@
 package View.toolPanel.toolButtons;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 
 public abstract class AtoolButton extends JButton {
     private String messageInfo = null;
-    private static final String IMG_DIR = "src/images/";
+    private static final String IMG_DIR = "images/";
     private static final int BUTTON_WIDTH = 60;
     private static final int BUTTON_HEIGHT = 60;
     private static final Color BUTTON_COLOR = Color.blue;

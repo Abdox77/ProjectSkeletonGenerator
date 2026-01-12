@@ -1,0 +1,448 @@
+Project Skeleton Generator - Detailed Breakdown
+Overview
+This is a UML Class Diagram Editor built with Java Swing that allows users to visually design class diagrams and generate Java source code from them.
+
+Architecture
+The project follows a modified MVC (Model-View-Controller) pattern:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                        APPLICATION                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │    VIEW      │    │  CONTROLLER  │    │    MODEL     │       │
+│  │              │    │              │    │              │       │
+│  │ - appFrame   │◄──►│ toolPanel    │◄──►│ - ClassModel │       │
+│  │ - tinkerPanel│    │   Observer   │    │ - Relationship│      │
+│  │ - toolPanel  │    │              │    │ - CodeGenerator│     │
+│  │ - Dialogs    │    │              │    │              │       │
+│  └──────────────┘    └──────────────┘    └──────────────┘       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+
+src/
+├── Main.java                           # Entry point
+│
+├── Controllers/
+│   └── toolPanelObserver.java          # Interface for communication
+│
+├── Model/
+│   ├── ClassModel.java                 # Data structure for a class
+│   ├── Relationship.java               # Data structure for relationships
+│   └── CodeGenerator.java              # Generates Java code files
+│
+└── View/
+    ├── appFrame.java                   # Main window frame
+    │
+    ├── tinkerPanel/
+    │   ├── tinkerPanel.java            # Canvas where diagram is drawn
+    │   ├── DragHandler.java            # Handles mouse drag events
+    │   │
+    │   ├── elements/
+    │   │   ├── classBox.java           # Visual class box component
+    │   │   ├── inheritance.java        # Draws inheritance arrows
+    │   │   ├── aggregation.java        # Draws aggregation lines
+    │   │   ├── composition.java        # Draws composition lines
+    │   │   ├── associationForte.java   # Draws strong association
+    │   │   └── associationFaible.java  # Draws weak association
+    │   │
+    │   └── tools/
+    │       ├── AttributeDialog.java    # Dialog for adding attributes
+    │       └── MethodDialog.java       # Dialog for adding methods
+    │
+    └── toolPanel/
+        ├── toolPanel.java              # Left sidebar with buttons
+        │
+        ├── toolButtons/
+        │   ├── AtoolButton.java        # Abstract base button
+        │   ├── classBoxButton.java     # Creates new class
+        │   ├── inheritanceButton.java  # Creates inheritance
+        │   ├── aggregationButton.java  # Creates aggregation
+        │   ├── compostionButton.java   # Creates composition
+        │   ├── associationForteButton.java
+        │   ├── associationFaibleButton.java
+        │   └── genCodeButton.java      # Generates code
+        │
+        └── Dialogs/
+            ├── inheritanceDialog.java  # Select parent/child
+            ├── aggregationDialog.java  # Select classes + cardinality
+            ├── CompositionDialog.java  # Select classes + cardinality
+            └── AssociationDialog.java  # Select classes + cardinality
+
+
+
+// Entry point - creates and shows the main window
+public class Main {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            appFrame frame = new appFrame();
+            frame.render();
+        });
+    }
+}
+
+
+public interface toolPanelObserver {
+    void onClassCreate(String className);
+    void onInheritanceCreate(String parent, String child);
+    void onAggregationCreate(String first, String second, String card1, String card2);
+    void onCompositionCreate(String first, String second, String card1, String card2);
+    void onAssociationForteCreate(String first, String second, String card1, String card2);
+    void onAssociationFaibleCreate(String first, String second, String card1, String card2);
+    List<String> getClassNames();
+    void generateCode();
+}
+
+
+Flow:
+    Button Click → Dialog → Observer Method → tinkerPanel creates element
+
+3. Model Layer
+ClassModel.java
+
+public class ClassModel {
+    private String name;
+    private List<Attribute> attributes;
+    private List<Method> methods;
+    private List<String> parents;           // For inheritance
+    private List<Relationship> relationships; // For other relations
+    
+    // Inner classes
+    public static class Attribute {
+        private String type;
+        private String name;
+    }
+    
+    public static class Method {
+        private String returnType;
+        private String name;
+        private List<String[]> arguments;  // [type, name] pairs
+    }
+}
+
+
+Purpose: Represents a class with all its data - used for code generation.
+
+Relationship.java
+
+
+public class Relationship {
+    private RelationType type;      // AGGREGATION, COMPOSITION, etc.
+    private String targetClass;     // The related class name
+    private String cardinality;     // "0..1", "1..*", etc.
+}
+
+public enum RelationType {
+    AGGREGATION,
+    COMPOSITION,
+    ASSOCIATION_FORTE,
+    ASSOCIATION_FAIBLE
+}
+
+
+public class CodeGenerator {
+    private Map<String, ClassModel> classModels;
+    private String outputDirectory;
+    
+    public void generateCode() {
+        for (ClassModel model : classModels.values()) {
+            generateClassFile(model);
+        }
+    }
+    
+    private String generateClassCode(ClassModel model) {
+        StringBuilder sb = new StringBuilder();
+        
+        // Class declaration with inheritance
+        sb.append("public class ").append(model.getName());
+        if (!model.getParents().isEmpty()) {
+            sb.append(" extends ").append(model.getParents().get(0));
+        }
+        sb.append(" {\n\n");
+        
+        // Generate attributes
+        // Generate relationship fields
+        // Generate constructor
+        // Generate getters/setters
+        // Generate methods
+        
+        return sb.toString();
+    }
+}
+
+
+Purpose: Takes ClassModel objects and generates .java files.
+
+Code Generation Logic:
+
+UML Element	Generated Code
+Attribute int age	private int age; + getter + setter
+Method void save()	public void save() { }
+Inheritance	extends ParentClass
+Aggregation 0..*	private List<TargetClass> targetClasses;
+Aggregation 1..1	private TargetClass targetClass;
+
+4. View Layer
+appFrame.java
+
+
+public class appFrame extends JFrame {
+    private toolPanel toolPanel;
+    private tinkerPanel tinkerPanel;
+    
+    public void render() {
+        // Create tinkerPanel (canvas)
+        tinkerPanel = new tinkerPanel();
+        
+        // Create toolPanel with tinkerPanel as observer
+        toolPanel = new toolPanel(tinkerPanel);
+        
+        // Layout: toolPanel on left, tinkerPanel in center
+        setLayout(new BorderLayout());
+        add(toolPanel, BorderLayout.WEST);
+        add(tinkerPanel, BorderLayout.CENTER);
+        
+        setVisible(true);
+    }
+}
+
+Purpose: Main window that contains the tool panel and canvas.
+
+tinkerPanel.java
+
+
+public class tinkerPanel extends JPanel implements toolPanelObserver {
+    private List<classBox> classBoxList;
+    private List<inheritance> inheritanceList;
+    private List<aggregation> aggregationList;
+    private List<composition> compositionList;
+    private List<associationForte> associationForteList;
+    private List<associationFaible> associationFaibleList;
+    
+    @Override
+    public void onClassCreate(String className) {
+        // Create new classBox at random position
+        classBox box = new classBox(className, this);
+        box.setBounds(randomX, randomY, 200, 200);
+        classBoxList.add(box);
+        add(box);
+        repaint();
+    }
+    
+    @Override
+    public void onInheritanceCreate(String parent, String child) {
+        classBox parentBox = findClassBox(parent);
+        classBox childBox = findClassBox(child);
+        
+        inheritance inh = new inheritance(childBox, parentBox);
+        inheritanceList.add(inh);
+        add(inh);
+        repaint();
+    }
+    
+    @Override
+    public void generateCode() {
+        // Build ClassModel objects from visual elements
+        Map<String, ClassModel> models = buildClassModels();
+        
+        // Choose output directory
+        JFileChooser chooser = new JFileChooser();
+        
+        // Generate code
+        CodeGenerator generator = new CodeGenerator(models, directory);
+        generator.generateCode();
+    }
+    
+    private Map<String, ClassModel> buildClassModels() {
+        // Convert visual classBox elements to ClassModel objects
+        // Include attributes, methods, inheritance, relationships
+    }
+}
+
+Purpose: The main canvas where all diagram elements are placed. Implements the observer interface to receive commands from tool buttons.
+
+
+public class classBox extends JPanel {
+    private JLabel nameLabel;
+    private JPanel attributePanel;
+    private JPanel methodsPanel;
+    private List<String[]> attributesList;    // [type, name] pairs
+    private List<MethodData> methodsList;
+    private JPopupMenu contextMenu;
+    
+    public classBox(String name, tinkerPanel parent) {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        
+        // Name section
+        nameLabel = new JLabel(name);
+        add(nameLabel);
+        add(new JSeparator());
+        
+        // Attributes section
+        attributePanel = new JPanel();
+        add(attributePanel);
+        add(new JSeparator());
+        
+        // Methods section
+        methodsPanel = new JPanel();
+        add(methodsPanel);
+        
+        // Context menu for right-click
+        initContextMenu();
+        
+        // Make draggable
+        DragHandler dragHandler = new DragHandler(this);
+        addMouseListener(dragHandler);
+        addMouseMotionListener(dragHandler);
+    }
+    
+    private void initContextMenu() {
+        contextMenu = new JPopupMenu();
+        
+        JMenuItem addAttr = new JMenuItem("Add Attribute");
+        addAttr.addActionListener(e -> {
+            AttributeDialog dialog = new AttributeDialog(...);
+            if (dialog.isConfirmed()) {
+                createNewAttr(dialog.getType(), dialog.getName());
+            }
+        });
+        
+        JMenuItem addMethod = new JMenuItem("Add Method");
+        JMenuItem delete = new JMenuItem("Delete");
+        
+        contextMenu.add(addAttr);
+        contextMenu.add(addMethod);
+        contextMenu.add(delete);
+    }
+}
+
+
+Visual Structure:
+
+
+┌─────────────────────┐
+│      ClassName      │  ← nameLabel
+├─────────────────────┤
+│ - attribute1: int   │  ← attributePanel
+│ - attribute2: String│
+├─────────────────────┤
+│ + method1(): void   │  ← methodsPanel
+│ + method2(x: int)   │
+└─────────────────────┘
+
+
+
+Relationship Drawing Classes
+All relationship classes extend JComponent and override paintComponent():
+
+public class inheritance extends JComponent {
+    private classBox child;
+    private classBox parent;
+    
+    @Override
+    public void paintComponent(Graphics g) {
+        // Calculate connection points between boxes
+        Point2D[] points = getConnectionPoints();
+        
+        // Draw line
+        g2.draw(new Line2D.Double(p1, p2));
+        
+        // Draw inheritance triangle head
+        drawInheritanceHead(g2, p2, angle);
+    }
+}
+
+Relationship Types and Their Visual Representation:
+
+Type	Line Style	Head Style	Self-Relation
+Inheritance	Solid	Hollow triangle	Not allowed
+Aggregation	Solid	Hollow diamond	Loop with diamond
+Composition	Solid	Filled diamond	Loop with filled diamond
+Strong Association	Solid	Filled arrow	Loop with arrow
+Weak Association	Dashed	Open arrow	Loop with arrow
+
+
+
+
+
+Visual Layout:
+┌──────────────┐
+│  [Class]     │
+│  [Inherit]   │
+│  [Aggreg]    │
+│  [Compos]    │
+│  [AssocF]    │
+│  [AssocW]    │
+│  [Generate]  │
+└──────────────┘
+
+
+
+Dialogs
+
+public class inheritanceDialog extends JDialog {
+    private JComboBox<String> parentClassCombo;
+    private JComboBox<String> childClassCombo;
+    private boolean confirmed = false;
+    
+    private boolean validateInput() {
+        String parent = (String) parentClassCombo.getSelectedItem();
+        String child = (String) childClassCombo.getSelectedItem();
+        
+        // Prevent self-inheritance
+        if (parent.equals(child)) {
+            JOptionPane.showMessageDialog(this, 
+                "Parent and child classes must be different");
+            return false;
+        }
+        return true;
+    }
+}
+
+Data Flow
+Creating a Class
+
+1. User clicks classBoxButton
+2. Input dialog appears → User enters "Person"
+3. Button calls observer.onClassCreate("Person")
+4. tinkerPanel.onClassCreate() executes:
+   - Creates new classBox("Person")
+   - Sets random position
+   - Adds to classBoxList
+   - Adds to panel
+   - Calls repaint()
+5. classBox appears on canvas
+
+
+
+
+Generating Code
+
+1. User clicks genCodeButton
+2. Button calls observer.generateCode()
+3. tinkerPanel.generateCode() executes:
+   - Calls buildClassModels() to convert visual elements to data
+   - Shows JFileChooser for output directory
+   - Creates CodeGenerator with models and directory
+   - Calls generator.generateCode()
+4. CodeGenerator for each class:
+   - Generates class declaration
+   - Adds inheritance if any
+   - Generates fields from attributes
+   - Generates fields from relationships
+   - Generates constructor
+   - Generates getters/setters
+   - Generates method stubs
+   - Writes to .java file
+
+
+
+Key Design Patterns Used
+Pattern	Where Used	Purpose
+Observer	toolPanelObserver	Decouples buttons from canvas
+MVC	Overall structure	Separates concerns
+Template Method	AtoolButton	Common button behavior
+Strategy	Relationship drawing	Different drawing algorithms
+
+
