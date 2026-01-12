@@ -42,7 +42,7 @@ public class MethodDialog extends JDialog {
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
         
-        JPanel formPanel = new JPanel(new GridBagLayout());
+        JPanel formPanel = new JPanel(new  ());
         formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
