@@ -30,7 +30,6 @@ public class classBox extends JPanel {
     private JPanel groupPanel;
     private JPanel attributePanel;
     private JPanel methodsPanel;
-    private ArrayList<JLabel> attributes;
     private final Color CLASSBOX_COLOR = Color.LIGHT_GRAY;
     public DragHandler dragHandler;
     private List<String[]> attributesList;
