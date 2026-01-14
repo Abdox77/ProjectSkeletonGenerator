@@ -18,6 +18,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import View.tinkerPanel.DragHandler;
@@ -91,11 +92,16 @@ public class classBox extends JPanel {
         contextMenu = new JPopupMenu();
 
         JMenuItem addAttr = getAttrJMenuItem();
+        JMenuItem editAttr = getEditAttrJMenuItem();
         JMenuItem addMethod = getMethodJMenuItem();
+        JMenuItem editMethod = getEditMethodJMenuItem();
         JMenuItem deleteClass = getDeleteJMenuItem();
 
         contextMenu.add(addAttr);
+        contextMenu.add(editAttr);
+        contextMenu.addSeparator();
         contextMenu.add(addMethod);
+        contextMenu.add(editMethod);
         contextMenu.addSeparator();
         contextMenu.add(deleteClass);
         MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -111,31 +117,175 @@ public class classBox extends JPanel {
         addMouseListener(mouseAdapter);
     }
 
+    private List<String> getAvailableClassNames() {
+        List<String> classNames = new ArrayList<>();
+        Container parent = getParent();
+        if (parent != null) {
+            try {
+                java.lang.reflect.Method method = parent.getClass().getMethod("getClassNames");
+                @SuppressWarnings("unchecked")
+                List<String> names = (List<String>) method.invoke(parent);
+                classNames.addAll(names);
+            } catch (Exception ex) {
+            }
+        }
+        return classNames;
+    }
+
     private JMenuItem getAttrJMenuItem() {
-        JMenuItem addAttr = new JMenuItem("Add Attribute");
+        JMenuItem addAttr = new JMenuItem("Add Attribute(s)");
 
         addAttr.addActionListener(e -> {
             Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
-            AttributeDialog dialog = new AttributeDialog(parentFrame);
+            List<String> classNames = getAvailableClassNames();
+            AttributeDialog dialog = new AttributeDialog(parentFrame, classNames);
             dialog.setVisible(true);
 
             if (dialog.isConfirmed()) {
-                String attr = dialog.getAttributeName();
-                String type = dialog.getAttributeType();
-                attr = attr.trim();
-                if (attr.isBlank())
-                    return;
-                createNewAttr(type, attr);
+                List<String[]> newAttributes = dialog.getAttributesList();
+                for (String[] attr : newAttributes) {
+                    String type = attr[0];
+                    String name = attr[1];
+                    if (!name.isBlank()) {
+                        createNewAttr(type, name);
+                    }
+                }
             }
         });
         return addAttr;
+    }
+
+    private JMenuItem getEditAttrJMenuItem() {
+        JMenuItem editAttr = new JMenuItem("Edit/Delete Attributes");
+        editAttr.addActionListener(e -> {
+            if (attributesList.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No attributes to edit.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            String[] attrNames = new String[attributesList.size()];
+            for (int i = 0; i < attributesList.size(); i++) {
+                attrNames[i] = attributesList.get(i)[1] + ": " + attributesList.get(i)[0];
+            }
+            
+            String selected = (String) JOptionPane.showInputDialog(
+                parentFrame,
+                "Select attribute to edit or delete:",
+                "Edit Attributes",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                attrNames,
+                attrNames[0]
+            );
+            
+            if (selected != null) {
+                int index = -1;
+                for (int i = 0; i < attrNames.length; i++) {
+                    if (attrNames[i].equals(selected)) {
+                        index = i;
+                        break;
+                    }
+                }
+                
+                if (index >= 0) {
+                    String[] options = {"Edit", "Delete", "Cancel"};
+                    int choice = JOptionPane.showOptionDialog(
+                        parentFrame,
+                        "What do you want to do with '" + selected + "'?",
+                        "Edit/Delete Attribute",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]
+                    );
+                    
+                    if (choice == 0) {
+                        editAttribute(index, parentFrame);
+                    } else if (choice == 1) {
+                        deleteAttribute(index);
+                    }
+                }
+            }
+        });
+        return editAttr;
+    }
+
+    private void editAttribute(int index, Frame parentFrame) {
+        String[] attr = attributesList.get(index);
+        String currentType = attr[0];
+        String currentName = attr[1];
+        
+        boolean isList = currentType.startsWith("List<");
+        String baseType = isList ? currentType.substring(5, currentType.length() - 1) : currentType;
+        
+        JTextField nameField = new JTextField(currentName, 15);
+        List<String> types = new ArrayList<>();
+        types.add("int");
+        types.add("char");
+        types.add("string");
+        types.add("boolean");
+        types.add("double");
+        types.add("float");
+        types.add("long");
+        types.addAll(getAvailableClassNames());
+        
+        javax.swing.JComboBox<String> typeCombo = new javax.swing.JComboBox<>(types.toArray(new String[0]));
+        typeCombo.setEditable(true);
+        typeCombo.setSelectedItem(baseType);
+        
+        javax.swing.JCheckBox listCheck = new javax.swing.JCheckBox("Is List", isList);
+        
+        JPanel panel = new JPanel(new java.awt.GridLayout(3, 2, 5, 5));
+        panel.add(new JLabel("Name:"));
+        panel.add(nameField);
+        panel.add(new JLabel("Type:"));
+        panel.add(typeCombo);
+        panel.add(new JLabel(""));
+        panel.add(listCheck);
+        
+        int result = JOptionPane.showConfirmDialog(parentFrame, panel, "Edit Attribute", JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            String newName = nameField.getText().trim();
+            String newType = (String) typeCombo.getSelectedItem();
+            if (listCheck.isSelected()) {
+                newType = "List<" + newType + ">";
+            }
+            
+            if (!newName.isBlank() && newType != null) {
+                attributesList.set(index, new String[]{newType, newName});
+                refreshAttributePanel();
+            }
+        }
+    }
+
+    private void deleteAttribute(int index) {
+        attributesList.remove(index);
+        refreshAttributePanel();
+    }
+
+    private void refreshAttributePanel() {
+        attributePanel.removeAll();
+        for (String[] attr : attributesList) {
+            JLabel label = new JLabel("- " + attr[1] + ": " + attr[0].toUpperCase());
+            label.setOpaque(true);
+            label.setBackground(CLASSBOX_COLOR);
+            label.setPreferredSize(new Dimension(200, 20));
+            label.setMaximumSize(label.getPreferredSize());
+            attributePanel.add(label);
+        }
+        attributePanel.revalidate();
+        attributePanel.repaint();
     }
 
     private JMenuItem getMethodJMenuItem() {
         JMenuItem addMethod = new JMenuItem("Add Method");
         addMethod.addActionListener(e -> {
             Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
-            MethodDialog dialog = new MethodDialog(parentFrame);
+            List<String> classNames = getAvailableClassNames();
+            MethodDialog dialog = new MethodDialog(parentFrame, classNames);
             dialog.setVisible(true);
             
             if (dialog.isConfirmed()) {
@@ -146,6 +296,152 @@ public class classBox extends JPanel {
             }
         });
         return addMethod;
+    }
+
+    private JMenuItem getEditMethodJMenuItem() {
+        JMenuItem editMethod = new JMenuItem("Edit/Delete Methods");
+        editMethod.addActionListener(e -> {
+            if (methodsList.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No methods to edit.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            String[] methodNames = new String[methodsList.size()];
+            for (int i = 0; i < methodsList.size(); i++) {
+                MethodData md = methodsList.get(i);
+                methodNames[i] = md.name + "() : " + md.returnType;
+            }
+            
+            String selected = (String) JOptionPane.showInputDialog(
+                parentFrame,
+                "Select method to edit or delete:",
+                "Edit Methods",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                methodNames,
+                methodNames[0]
+            );
+            
+            if (selected != null) {
+                int index = -1;
+                for (int i = 0; i < methodNames.length; i++) {
+                    if (methodNames[i].equals(selected)) {
+                        index = i;
+                        break;
+                    }
+                }
+                
+                if (index >= 0) {
+                    String[] options = {"Edit", "Delete", "Cancel"};
+                    int choice = JOptionPane.showOptionDialog(
+                        parentFrame,
+                        "What do you want to do with '" + selected + "'?",
+                        "Edit/Delete Method",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]
+                    );
+                    
+                    if (choice == 0) {
+                        editMethod(index, parentFrame);
+                    } else if (choice == 1) {
+                        deleteMethod(index);
+                    }
+                }
+            }
+        });
+        return editMethod;
+    }
+
+    private void editMethod(int index, Frame parentFrame) {
+        MethodData md = methodsList.get(index);
+        
+        boolean isReturnList = md.returnType.startsWith("List<");
+        String baseReturnType = isReturnList ? md.returnType.substring(5, md.returnType.length() - 1) : md.returnType;
+        
+        List<String> types = new ArrayList<>();
+        types.add("void");
+        types.add("int");
+        types.add("char");
+        types.add("string");
+        types.add("boolean");
+        types.add("double");
+        types.add("float");
+        types.add("long");
+        types.addAll(getAvailableClassNames());
+        
+        JTextField nameField = new JTextField(md.name, 15);
+        javax.swing.JComboBox<String> returnTypeCombo = new javax.swing.JComboBox<>(types.toArray(new String[0]));
+        returnTypeCombo.setEditable(true);
+        returnTypeCombo.setSelectedItem(baseReturnType);
+        javax.swing.JCheckBox returnListCheck = new javax.swing.JCheckBox("Is List", isReturnList);
+        
+        StringBuilder argsStr = new StringBuilder();
+        for (int i = 0; i < md.arguments.size(); i++) {
+            if (i > 0) argsStr.append(", ");
+            argsStr.append(md.arguments.get(i)[0]).append(": ").append(md.arguments.get(i)[1]);
+        }
+        JTextField argsField = new JTextField(argsStr.toString(), 20);
+        argsField.setToolTipText("Format: name1: type1, name2: type2");
+        
+        JPanel panel = new JPanel(new java.awt.GridLayout(4, 2, 5, 5));
+        panel.add(new JLabel("Method Name:"));
+        panel.add(nameField);
+        panel.add(new JLabel("Return Type:"));
+        panel.add(returnTypeCombo);
+        panel.add(new JLabel(""));
+        panel.add(returnListCheck);
+        panel.add(new JLabel("Arguments:"));
+        panel.add(argsField);
+        
+        int result = JOptionPane.showConfirmDialog(parentFrame, panel, "Edit Method", JOptionPane.OK_CANCEL_OPTION);
+        
+        if (result == JOptionPane.OK_OPTION) {
+            String newName = nameField.getText().trim();
+            String newReturnType = (String) returnTypeCombo.getSelectedItem();
+            if (returnListCheck.isSelected() && !newReturnType.equals("void")) {
+                newReturnType = "List<" + newReturnType + ">";
+            }
+            
+            List<String[]> newArgs = new ArrayList<>();
+            String argsText = argsField.getText().trim();
+            if (!argsText.isEmpty()) {
+                String[] argParts = argsText.split(",");
+                for (String arg : argParts) {
+                    String[] parts = arg.trim().split(":");
+                    if (parts.length == 2) {
+                        newArgs.add(new String[]{parts[0].trim(), parts[1].trim()});
+                    }
+                }
+            }
+            
+            if (!newName.isBlank() && newReturnType != null) {
+                methodsList.set(index, new MethodData(newReturnType, newName, newArgs));
+                refreshMethodsPanel();
+            }
+        }
+    }
+
+    private void deleteMethod(int index) {
+        methodsList.remove(index);
+        refreshMethodsPanel();
+    }
+
+    private void refreshMethodsPanel() {
+        methodsPanel.removeAll();
+        for (MethodData md : methodsList) {
+            JLabel label = new JLabel(buildMethodString(md.returnType, md.name, md.arguments));
+            label.setOpaque(true);
+            label.setBackground(CLASSBOX_COLOR);
+            label.setPreferredSize(new Dimension(200, 20));
+            label.setMaximumSize(label.getPreferredSize());
+            methodsPanel.add(label);
+        }
+        methodsPanel.revalidate();
+        methodsPanel.repaint();
     }
 
     private JMenuItem getDeleteJMenuItem() {
@@ -228,20 +524,20 @@ public class classBox extends JPanel {
         sb.append("+ ");
         returnType = returnType.toUpperCase();
         if (!returnType.equals("VOID")) {
-            sb.append(returnType.toUpperCase());
+            sb.append(returnType);
             sb.append(" ");
         }
         sb.append(methodName);
         sb.append(" (");
         int i = 0;
         for(String[] tmp : methodArgs) {
-            ++i;
+            if (i > 0) {
+                sb.append(", ");
+            }
             sb.append(tmp[0]);
             sb.append(": ");
             sb.append(tmp[1].toUpperCase());
-            if (i + 1 < methodArgs.size()) {
-                sb.append(",");
-            }
+            i++;
         }
         sb.append(")");
         return sb.toString();

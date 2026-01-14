@@ -26,25 +26,54 @@ package "View.toolPanel" {
 
     abstract class AtoolButton {
         - messageInfo: String
-        - IMG_DIR: String
-        - BUTTON_WIDTH: int
-        - BUTTON_HEIGHT: int
+        # IMG_DIR: String
+        # BUTTON_WIDTH: int
+        # BUTTON_HEIGHT: int
         + getMessageInfo(): String
     }
 
-    class classBoxButton
-    class inheritanceButton
-    class aggregationButton
-    class compostionButton
-    class associationForteButton
-    class associationFaibleButton
+    class classBoxButton {
+        - MESSAGE_INFO: String
+        - ICON_NAME: String
+    }
+    
+    class inheritanceButton {
+        - MESSAGE_INFO: String
+        - ICON_NAME: String
+        - observer: toolPanelObserver
+    }
+    
+    class aggregationButton {
+        - MESSAGE_INFO: String
+        - ICON_NAME: String
+        - observer: toolPanelObserver
+    }
+    
+    class compostionButton {
+        - MESSAGE_INFO: String
+        - ICON_NAME: String
+        - observer: toolPanelObserver
+    }
+    
+    class associationForteButton {
+        - MESSAGE_INFO: String
+        - ICON_NAME: String
+        - observer: toolPanelObserver
+    }
+    
+    class associationFaibleButton {
+        - MESSAGE_INFO: String
+        - ICON_NAME: String
+        - observer: toolPanelObserver
+    }
+    
     class genCodeButton
 }
 
 package "View.toolPanel.Dialogs" {
     class inheritanceDialog {
-        - parentClassCombo: JComboBox
-        - childClassCombo: JComboBox
+        - parentClassCombo: JComboBox<String>
+        - childClassCombo: JComboBox<String>
         - confirmed: boolean
         + isConfirmed(): boolean
         + getParentClass(): String
@@ -52,48 +81,63 @@ package "View.toolPanel.Dialogs" {
     }
 
     class aggregationDialog {
-        - firstClassCombo: JComboBox
-        - secondClassCombo: JComboBox
-        - cardFirstCombo: JComboBox
-        - cardSecondCombo: JComboBox
+        - firstClassCombo: JComboBox<String>
+        - secondClassCombo: JComboBox<String>
+        - cardFirstCombo: JComboBox<String>
+        - cardSecondCombo: JComboBox<String>
         - confirmed: boolean
         + isConfirmed(): boolean
         + getFirstClass(): String
         + getSecondClass(): String
+        + getFirstCardinality(): String
+        + getSecondCardinality(): String
     }
 
     class CompositionDialog {
-        - firstClassCombo: JComboBox
-        - secondClassCombo: JComboBox
+        - firstClassCombo: JComboBox<String>
+        - secondClassCombo: JComboBox<String>
+        - cardFirstCombo: JComboBox<String>
+        - cardSecondCombo: JComboBox<String>
         - confirmed: boolean
         + isConfirmed(): boolean
+        + getFirstClass(): String
+        + getSecondClass(): String
+        + getFirstCardinality(): String
+        + getSecondCardinality(): String
     }
 
     class AssociationDialog {
-        - firstClassCombo: JComboBox
-        - secondClassCombo: JComboBox
+        - firstClassCombo: JComboBox<String>
+        - secondClassCombo: JComboBox<String>
+        - cardFirstCombo: JComboBox<String>
+        - cardSecondCombo: JComboBox<String>
         - confirmed: boolean
         + isConfirmed(): boolean
+        + getFirstClass(): String
+        + getSecondClass(): String
+        + getFirstCardinality(): String
+        + getSecondCardinality(): String
     }
 
     class AttributeDialog {
         - nameField: JTextField
-        - typeCombo: JComboBox
+        - typeCombo: JComboBox<String>
+        - listCheck: JCheckBox
         - confirmed: boolean
         + isConfirmed(): boolean
-        + getAttributeName(): String
-        + getAttributeType(): String
+        + getName(): String
+        + getType(): String
     }
 
     class MethodDialog {
         - methodNameField: JTextField
-        - returnTypeCombo: JComboBox
-        - methodArgs: List
+        - returnTypeCombo: JComboBox<String>
+        - argumentsTableModel: DefaultTableModel
         - confirmed: boolean
         + isConfirmed(): boolean
         + getMethodName(): String
         + getReturnType(): String
-        + getMethodArgs(): List
+        + getMethodArgs(): List<String[]>
     }
 }
 
@@ -102,27 +146,34 @@ package "View.tinkerPanel" {
         - CLASS_WIDTH: int
         - CLASS_HEIGHT: int
         - MARGIN: int
-        - classBoxList: List
-        - inheritanceList: List
-        - aggregationList: List
-        - compositionList: List
-        - associationForteList: List
-        - associationFaibleList: List
-        + onClassCreate(event: String): void
+        - TINKERPANEL_BACKGROUND: Color
+        - classBoxList: List<classBox>
+        - inheritanceList: List<inheritance>
+        - aggregationList: List<aggregation>
+        - compositionList: List<composition>
+        - associationForteList: List<associationForte>
+        - associationFaibleList: List<associationFaible>
+        - random: Random
+        + onClassCreate(className: String): void
         + onInheritanceCreate(parent: String, child: String): void
-        + onAggregationCreate(): void
-        + onCompositionCreate(): void
-        + onAssociationForteCreate(): void
-        + onAssociationFaibleCreate(): void
+        + onAggregationCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + onCompositionCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + onAssociationForteCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + onAssociationFaibleCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
         + generateCode(): void
-        + getClassNames(): List
+        + getClassNames(): List<String>
+        + getClassesWithParent(): Set<String>
         + deleteClassBox(box: classBox): void
+        - buildClassModels(): Map<String, ClassModel>
+        - countRelationsBetween(a: classBox, b: classBox): int
     }
 
     class DragHandler {
         - last: Point
         - clampedToParent: boolean
         - dragTarget: JComponent
+        - dragTargetParent: JComponent
+        + clampedToParent(isClamped: boolean): DragHandler
         + mousePressed(e: MouseEvent): void
         + mouseDragged(e: MouseEvent): void
         + mouseReleased(e: MouseEvent): void
@@ -133,31 +184,41 @@ package "View.tinkerPanel.elements" {
     class classBox {
         - contextMenu: JPopupMenu
         - nameLabel: JLabel
+        - groupPanel: JPanel
         - attributePanel: JPanel
         - methodsPanel: JPanel
-        - attributesList: List
-        - methodsList: List
+        - CLASSBOX_COLOR: Color
+        - attributesList: List<String[]>
+        - methodsList: List<MethodData>
         + dragHandler: DragHandler
-        + getAttributesList(): List
-        + getMethodsList(): List
-        + getName(): String
+        + getAttributesList(): List<String[]>
+        + getMethodsList(): List<MethodData>
+        - refreshAttributePanel(): void
+        - refreshMethodsPanel(): void
+        - createNewAttr(type: String, name: String): void
+        - createNewMethod(returnType: String, name: String, args: List<String[]>): void
     }
 
     class MethodData {
         + returnType: String
         + name: String
-        + arguments: List
+        + arguments: List<String[]>
+        + MethodData(returnType: String, name: String, arguments: List<String[]>)
     }
 
     class inheritance {
         - child: classBox
         - parent: classBox
         - ARROW_SIZE: int
+        - LINE_OFFSET: int
         - relationIndex: int
-        + paintComponent(g: Graphics): void
+        + setRelationIndex(index: int): void
+        # paintComponent(g: Graphics): void
+        - drawInheritanceHead(g: Graphics2D, tip: Point2D, angle: double): void
+        - getConnectionPoints(childCenter: Point2D, parentCenter: Point2D): Point2D[]
+        - applyOffset(point: Point2D, fromCenter: Point2D, toCenter: Point2D): Point2D
         + getChild(): classBox
         + getParent(): classBox
-        + setRelationIndex(index: int): void
     }
 
     class aggregation {
@@ -165,11 +226,19 @@ package "View.tinkerPanel.elements" {
         - to: classBox
         - cardFrom: String
         - cardTo: String
+        - ALPHA: int
+        - LINE_OFFSET: int
         - relationIndex: int
-        + paintComponent(g: Graphics): void
+        + setRelationIndex(index: int): void
+        # paintComponent(g: Graphics): void
+        - drawAggregationHead(g: Graphics2D, tip: Point2D, angle: double): void
+        - drawSelfRelation(g2: Graphics2D): void
+        - drawCardinality(g: Graphics2D, point: Point2D, angle: double, card: String, isFrom: boolean): void
+        - applyOffset(point: Point2D, fromCenter: Point2D, toCenter: Point2D): Point2D
         + getFrom(): classBox
         + getTo(): classBox
-        + setRelationIndex(index: int): void
+        + getCardFrom(): String
+        + getCardTo(): String
     }
 
     class composition {
@@ -177,11 +246,19 @@ package "View.tinkerPanel.elements" {
         - to: classBox
         - cardFrom: String
         - cardTo: String
+        - ALPHA: int
+        - LINE_OFFSET: int
         - relationIndex: int
-        + paintComponent(g: Graphics): void
+        + setRelationIndex(index: int): void
+        # paintComponent(g: Graphics): void
+        - drawCompositionHead(g: Graphics2D, tip: Point2D, angle: double): void
+        - drawSelfRelation(g2: Graphics2D): void
+        - drawCardinality(g: Graphics2D, point: Point2D, angle: double, card: String, isFrom: boolean): void
+        - applyOffset(point: Point2D, fromCenter: Point2D, toCenter: Point2D): Point2D
         + getFrom(): classBox
         + getTo(): classBox
-        + setRelationIndex(index: int): void
+        + getCardFrom(): String
+        + getCardTo(): String
     }
 
     class associationForte {
@@ -189,11 +266,19 @@ package "View.tinkerPanel.elements" {
         - to: classBox
         - cardFrom: String
         - cardTo: String
+        - ARROW_SIZE: int
+        - LINE_OFFSET: int
         - relationIndex: int
-        + paintComponent(g: Graphics): void
+        + setRelationIndex(index: int): void
+        # paintComponent(g: Graphics): void
+        - drawFilledArrow(g: Graphics2D, tip: Point2D, angle: double): void
+        - drawSelfRelation(g2: Graphics2D): void
+        - drawCardinality(g: Graphics2D, point: Point2D, angle: double, card: String, isFrom: boolean): void
+        - applyOffset(point: Point2D, fromCenter: Point2D, toCenter: Point2D): Point2D
         + getFrom(): classBox
         + getTo(): classBox
-        + setRelationIndex(index: int): void
+        + getCardFrom(): String
+        + getCardTo(): String
     }
 
     class associationFaible {
@@ -201,11 +286,19 @@ package "View.tinkerPanel.elements" {
         - to: classBox
         - cardFrom: String
         - cardTo: String
+        - ARROW_SIZE: int
+        - LINE_OFFSET: int
         - relationIndex: int
-        + paintComponent(g: Graphics): void
+        + setRelationIndex(index: int): void
+        # paintComponent(g: Graphics): void
+        - drawOpenArrow(g: Graphics2D, tip: Point2D, angle: double): void
+        - drawSelfRelation(g2: Graphics2D): void
+        - drawCardinality(g: Graphics2D, point: Point2D, angle: double, card: String, isFrom: boolean): void
+        - applyOffset(point: Point2D, fromCenter: Point2D, toCenter: Point2D): Point2D
         + getFrom(): classBox
         + getTo(): classBox
-        + setRelationIndex(index: int): void
+        + getCardFrom(): String
+        + getCardTo(): String
     }
 }
 
@@ -213,11 +306,12 @@ package "Controllers" {
     interface toolPanelObserver {
         + onClassCreate(className: String): void
         + onInheritanceCreate(parent: String, child: String): void
-        + onAggregationCreate(): void
-        + onCompositionCreate(): void
-        + onAssociationForteCreate(): void
-        + onAssociationFaibleCreate(): void
-        + getClassNames(): List
+        + onAggregationCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + onCompositionCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + onAssociationForteCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + onAssociationFaibleCreate(firstClass: String, secondClass: String, cardFirst: String, cardSecond: String): void
+        + getClassNames(): List<String>
+        + getClassesWithParent(): Set<String>
         + generateCode(): void
     }
 }
@@ -225,19 +319,19 @@ package "Controllers" {
 package "Model" {
     class ClassModel {
         - name: String
-        - attributes: List
-        - methods: List
-        - parents: List
-        - relationships: List
+        - attributes: List<Attribute>
+        - methods: List<Method>
+        - parents: List<String>
+        - relationships: List<Relationship>
         + addAttribute(type: String, name: String): void
-        + addMethod(): void
-        + addParent(parent: String): void
-        + addRelationship(rel: Relationship): void
+        + addMethod(returnType: String, name: String, args: List<String[]>): void
+        + addParent(parentName: String): void
+        + addRelationship(relationship: Relationship): void
         + getName(): String
-        + getAttributes(): List
-        + getMethods(): List
-        + getParents(): List
-        + getRelationships(): List
+        + getAttributes(): List<Attribute>
+        + getMethods(): List<Method>
+        + getParents(): List<String>
+        + getRelationships(): List<Relationship>
     }
 
     class Attribute {
@@ -250,10 +344,10 @@ package "Model" {
     class Method {
         - returnType: String
         - name: String
-        - arguments: List
+        - arguments: List<String[]>
         + getReturnType(): String
         + getName(): String
-        + getArguments(): List
+        + getArguments(): List<String[]>
     }
 
     class Relationship {
@@ -273,33 +367,27 @@ package "Model" {
     }
 
     class CodeGenerator {
-        - classModels: Map
+        - classModels: Map<String, ClassModel>
         - outputDirectory: String
         + generateCode(): void
-        - generateClassFile(model: ClassModel): void
-        - generateClassCode(model: ClassModel): String
-        - generateConstructor(model: ClassModel): String
+        - generateClassFile(classModel: ClassModel): void
+        - generateClassCode(classModel: ClassModel): String
+        - generateConstructor(classModel: ClassModel): String
         - generateGetter(attr: Attribute): String
         - generateSetter(attr: Attribute): String
         - generateMethod(method: Method): String
         - mapType(type: String): String
+        - getDefaultValue(type: String): String
+        - determineAttributeType(rel: Relationship): String
     }
 }
 
+' Relationships
 appFrame *-- toolPanel
 appFrame *-- tinkerPanel
-classBox *-- MethodData
 
-tinkerPanel o-- classBox
-tinkerPanel o-- inheritance
-tinkerPanel o-- aggregation
-tinkerPanel o-- composition
-tinkerPanel o-- associationForte
-tinkerPanel o-- associationFaible
-
-ClassModel o-- Attribute
-ClassModel o-- Method
-ClassModel o-- Relationship
+toolPanel o-- AtoolButton
+toolPanel ..> toolPanelObserver
 
 classBoxButton --|> AtoolButton
 inheritanceButton --|> AtoolButton
@@ -307,16 +395,40 @@ aggregationButton --|> AtoolButton
 compostionButton --|> AtoolButton
 associationForteButton --|> AtoolButton
 associationFaibleButton --|> AtoolButton
+genCodeButton --|> AtoolButton
+
+inheritanceButton ..> inheritanceDialog
+aggregationButton ..> aggregationDialog
+compostionButton ..> CompositionDialog
+associationForteButton ..> AssociationDialog
+associationFaibleButton ..> AssociationDialog
 
 tinkerPanel ..|> toolPanelObserver
+tinkerPanel o-- classBox
+tinkerPanel o-- inheritance
+tinkerPanel o-- aggregation
+tinkerPanel o-- composition
+tinkerPanel o-- associationForte
+tinkerPanel o-- associationFaible
 
-toolPanel ..> toolPanelObserver
+classBox +-- MethodData
+classBox ..> DragHandler
+classBox ..> AttributeDialog
+classBox ..> MethodDialog
+
 inheritance --> classBox
 aggregation --> classBox
 composition --> classBox
 associationForte --> classBox
 associationFaible --> classBox
-CodeGenerator ..> ClassModel
+
+ClassModel +-- Attribute
+ClassModel +-- Method
+ClassModel o-- Relationship
 Relationship --> RelationType
+
+CodeGenerator ..> ClassModel
+tinkerPanel ..> ClassModel
+tinkerPanel ..> CodeGenerator
 
 @enduml
