@@ -1,7 +1,8 @@
+out/class_diagram/last_update_diagram
 ### IntelliJ IDEA ###
 out/production/*
-!**/src/main/**/out/
-!**/src/test/**/out/
+status*/src/main/**/out/
+status*/src/test/**/out/
 .kotlin
 
 ### Eclipse ###
@@ -13,8 +14,8 @@ out/production/*
 .springBeans
 .sts4-cache
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+status*/src/main/**/bin/
+status*/src/test/**/bin/
 
 ### NetBeans ###
 /nbproject/private/
