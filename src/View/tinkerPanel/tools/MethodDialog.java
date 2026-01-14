@@ -13,6 +13,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -25,21 +26,27 @@ import javax.swing.JTextField;
 public class MethodDialog extends JDialog {
     private JTextField methodNameField;
     private JComboBox<String> returnTypeCombo;
+    private JCheckBox returnIsListCheckBox;
     private JTextField argNameField;
     private JComboBox<String> argTypeCombo;
+    private JCheckBox argIsListCheckBox;
     private DefaultListModel<String> argsListModel;
     private JList<String> argsList;
     private List<String[]> methodArgs;
     private boolean confirmed = false;
 
     public MethodDialog(Frame parent) {
+        this(parent, new ArrayList<>());
+    }
+
+    public MethodDialog(Frame parent, List<String> classNames) {
         super(parent, "Add Method", true);
         methodArgs = new ArrayList<>();
-        initComponents();
+        initComponents(classNames);
         setLocationRelativeTo(parent);
     }
 
-    private void initComponents() {
+    private void initComponents(List<String> classNames) {
         setLayout(new BorderLayout(10, 10));
         
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -47,6 +54,24 @@ public class MethodDialog extends JDialog {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        List<String> types = new ArrayList<>();
+        types.add("void");
+        types.add("int");
+        types.add("char");
+        types.add("string");
+        types.add("boolean");
+        types.add("double");
+        types.add("float");
+        types.add("long");
+        for (String className : classNames) {
+            if (!types.contains(className)) {
+                types.add(className);
+            }
+        }
+
+        List<String> argTypes = new ArrayList<>(types);
+        argTypes.remove("void");
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -65,9 +90,15 @@ public class MethodDialog extends JDialog {
         
         gbc.gridx = 1; 
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        returnTypeCombo = new JComboBox<>(new String[]{"void", "int", "char", "string", "boolean"});
+        gbc.gridwidth = 1;
+        returnTypeCombo = new JComboBox<>(types.toArray(new String[0]));
+        returnTypeCombo.setEditable(true);
         formPanel.add(returnTypeCombo, gbc);
+
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        returnIsListCheckBox = new JCheckBox("List");
+        formPanel.add(returnIsListCheckBox, gbc);
 
         gbc.gridx = 0; 
         gbc.gridy = 2;
@@ -90,19 +121,28 @@ public class MethodDialog extends JDialog {
         gbc.gridy = 4;
         formPanel.add(new JLabel("Arg Type:"), gbc);
         
-        gbc.gridx = 1; gbc.gridy = 4;
-        argTypeCombo = new JComboBox<>(new String[]{"int", "char", "string", "boolean"});
+        gbc.gridx = 1; 
+        gbc.gridy = 4;
+        argTypeCombo = new JComboBox<>(argTypes.toArray(new String[0]));
+        argTypeCombo.setEditable(true);
         formPanel.add(argTypeCombo, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        argIsListCheckBox = new JCheckBox("Is List (List<Type>)");
+        formPanel.add(argIsListCheckBox, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 3;
-        gbc.gridheight = 2;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 3;
         JButton addArgButton = new JButton("Add Arg");
         addArgButton.addActionListener(e -> addArgument());
         formPanel.add(addArgButton, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.gridwidth = 2;
         gbc.gridheight = 1;
         argsListModel = new DefaultListModel<>();
@@ -112,7 +152,7 @@ public class MethodDialog extends JDialog {
         formPanel.add(scrollPane, gbc);
 
         gbc.gridx = 2; 
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.gridwidth = 1;
         JButton removeArgButton = new JButton("Remove");
         removeArgButton.addActionListener(e -> removeArgument());
@@ -156,10 +196,24 @@ public class MethodDialog extends JDialog {
             return;
         }
 
-        methodArgs.add(new String[]{argName, argType});
-        argsListModel.addElement(argName + ": " + argType);
+        if (argType == null || argType.trim().isBlank()) {
+            JOptionPane.showMessageDialog(this,
+                "Please select or enter a type",
+                "Validation Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String finalType = argType.trim();
+        if (argIsListCheckBox.isSelected()) {
+            finalType = "List<" + finalType + ">";
+        }
+
+        methodArgs.add(new String[]{argName, finalType});
+        argsListModel.addElement(argName + ": " + finalType);
         
         argNameField.setText("");
+        argIsListCheckBox.setSelected(false);
         argNameField.requestFocus();
     }
 
@@ -194,7 +248,11 @@ public class MethodDialog extends JDialog {
     }
 
     public String getReturnType() {
-        return (String) returnTypeCombo.getSelectedItem();
+        String type = (String) returnTypeCombo.getSelectedItem();
+        if (type != null && returnIsListCheckBox.isSelected()) {
+            return "List<" + type.trim() + ">";
+        }
+        return type;
     }
 
     public List<String[]> getMethodArgs() {

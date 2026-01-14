@@ -1,0 +1,46 @@
+Relations entre classes
+--|> : Héritage/Extension (ligne pleine avec flèche triangulaire vide)
+
+Exemple : classBoxButton --|> AtoolButton
+..|> : Implémentation d'interface (ligne pointillée avec flèche triangulaire vide)
+
+Exemple : tinkerPanel ..|> toolPanelObserver
+*-- : Composition (ligne pleine avec losange plein)
+
+Relation "fait partie de" (dépendance forte)
+Exemple : appFrame *-- toolPanel
+o-- : Agrégation (ligne pleine avec losange vide)
+
+Relation "contient" (dépendance faible)
+Exemple : tinkerPanel o-- classBox
+--> : Association directionnelle (ligne pleine avec flèche simple)
+
+Exemple : inheritance --> classBox
+..> : Dépendance (ligne pointillée avec flèche simple)
+
+Relation "utilise"
+Exemple : inheritanceButton ..> inheritanceDialog
++-- : Classe interne/imbriquée
+
+Exemple : classBox +-- MethodData
+-- : Association simple (ligne pleine sans flèche)
+
+Visibilité des membres
++ : public
+- : private
+# : protected
+~ : package/default
+Types de membres
+Sans préfixe : attribut
+() après le nom : méthode
+
+
+Weakest ←------------------------→ Strongest
+
+Association   Association    Aggregation    Composition
+  Faible        Forte            ◇              ♦
+    ──>          -->            o--            *--
+
+ "I know      "I use you     "I have you"  "I own you"
+   you"        actively"
+

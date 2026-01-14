@@ -36,6 +36,12 @@ public class CodeGenerator {
 
     private String generateClassCode(ClassModel classModel) {
         StringBuilder code = new StringBuilder();
+        
+        boolean needsListImport = needsListImport(classModel);
+        if (needsListImport) {
+            code.append("import java.util.ArrayList;\n");
+            code.append("import java.util.List;\n\n");
+        }
 
         code.append("public class ").append(classModel.getName());
 
@@ -174,7 +180,6 @@ public class CodeGenerator {
         }
 
         code.append(") {\n");
-        code.append("        // TODO: Implement method\n");
 
         if (!method.getReturnType().equalsIgnoreCase("void")) {
             code.append("        return ").append(getDefaultValue(method.getReturnType())).append(";\n");
@@ -186,23 +191,66 @@ public class CodeGenerator {
     }
 
     private String mapType(String type) {
+        if (type == null) return "Object";
+        
+        if (type.startsWith("List<") && type.endsWith(">")) {
+            String innerType = type.substring(5, type.length() - 1);
+            return "List<" + mapType(innerType) + ">";
+        }
+        
         switch (type.toLowerCase()) {
             case "int": return "int";
             case "char": return "char";
             case "string": return "String";
             case "boolean": return "boolean";
             case "void": return "void";
+            case "double": return "double";
+            case "float": return "float";
+            case "long": return "long";
             default: return type;
         }
     }
 
     private String getDefaultValue(String type) {
+        if (type == null) return "null";
+        
+        if (type.startsWith("List<") || type.toLowerCase().startsWith("list<")) {
+            return "new ArrayList<>()";
+        }
+        
         switch (type.toLowerCase()) {
             case "int": return "0";
             case "char": return "'\\0'";
             case "boolean": return "false";
+            case "double": return "0.0";
+            case "float": return "0.0f";
+            case "long": return "0L";
             default: return "null";
         }
+    }
+    
+    private boolean needsListImport(ClassModel classModel) {
+        for (ClassModel.Attribute attr : classModel.getAttributes()) {
+            if (attr.getType() != null && attr.getType().toLowerCase().startsWith("list<")) {
+                return true;
+            }
+        }
+        for (Relationship rel : classModel.getRelationships()) {
+            if (rel.getCardinality() != null && rel.getCardinality().contains("*")) {
+                return true;
+            }
+        }
+        for (ClassModel.Method method : classModel.getMethods()) {
+            if (method.getReturnType() != null && method.getReturnType().toLowerCase().startsWith("list<")) {
+                return true;
+            }
+            for (String[] arg : method.getArguments()) {
+                if (arg[1] != null && arg[1].toLowerCase().startsWith("list<")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private String capitalize(String str) {
